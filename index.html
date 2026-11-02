@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC+ - Sistema de Gestión</title>
+    <!-- Tailwind CSS CDN para diseño moderno -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        /* Estilos optimizados para la simulación y el renderizado de impresión del ticket */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #ticket-print, #ticket-print * {
+                visibility: visible;
+            }
+            #ticket-print {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 80mm;
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        .ticket-font {
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen">
+
+    <!-- Barra de Navegación Superior -->
+    <header class="bg-slate-900 text-white shadow-md no-print">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl font-black tracking-wider text-blue-400">PC<span class="text-white">+</span></span>
+                <span class="text-xs uppercase tracking-widest text-gray-400 border-l border-gray-600 pl-2">Centro Técnico</span>
+            </div>
+            <div class="text-sm text-gray-300">
+                Sistema POS y Control de Servicios
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <main class="container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 no-print">
+        
+        <!-- Formulario de Entrada (Izquierda) -->
+        <section class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <h2 class="text-xl font-bold text-gray-700 mb-6 flex items-center gap-2">
+                ⚡ Registro de Servicio / Venta
+            </h2>
+            
+            <form id="pos-form" class="space-y-6">
+                <!-- Datos del Cliente -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500">Datos del Cliente</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Nombre Completo</label>
+                            <input type="text" id="client-name" required placeholder="Ej. Juan Pérez" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Teléfono / Contacto</label>
+                            <input type="text" id="client-phone" required placeholder="Ej. +56 9 1234 5678" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalles del Equipo y Falla -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500">Información del Equipo</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Equipo / Modelo</label>
+                            <input type="text" id="equipment" placeholder="Ej. Laptop Asus ZenBook" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Diagnóstico / Concepto</label>
+                            <input type="text" id="concept" required placeholder="Ej. Mantenimiento general o Cambio de SSD" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Costos -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">Cargos Financieros</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Costo de Mano de Obra</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-400">$</span>
+                                <input type="number" id="price-service" value="0" min="0" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Costo de Repuestos</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-400">$</span>
+                                <input type="number" id="price-parts" value="0" min="0" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Monto Abonado</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-400">$</span>
+                                <input type="number" id="amount-paid" value="0" min="0" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón Generar -->
+                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition duration-200 shadow-md flex justify-center items-center gap-2">
+                    📊 Procesar y Generar Ticket
+                </button>
+            </form>
+        </section>
+
+        <!-- Previsualización Dinámica del Ticket (Derecha) -->
+        <section class="lg:col-span-1 flex flex-col items-center">
+            <div class="w-full max-w-sm bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-4">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">Vista de Pantalla</span>
+                <p class="text-sm text-gray-600">Completa el formulario y presiona el botón para actualizar el comprobante listo para impresión térmica (80mm).</p>
+            </div>
+
+            <!-- Contenedor del Ticket Físico Estilizado -->
+            <div id="ticket-print" class="w-[80mm] bg-white border border-gray-300 p-4 shadow-xl ticket-font text-xs text-black">
+                <!-- Encabezado del Comercio -->
+                <div class="text-center space-y-1 border-b border-dashed border-gray-400 pb-3">
+                    <h1 class="text-xl font-bold tracking-tight">PC+</h1>
+                    <p class="font-bold">SOLUCIONES TECNOLÓGICAS</p>
+                    <p>Nit: 123456789-0</p>
+                    <p>Av. Principal #456, Ciudad</p>
+                    <p>Tel: +56 9 1234 5678</p>
+                </div>
+
+                <!-- Metadatos del Cobro -->
+                <div class="py-2 border-b border-dashed border-gray-400 space-y-1">
+                    <p><strong>Ticket:</strong> <span id="t-number">00001</span></p>
+                    <p><strong>Fecha:</strong> <span id="t-date">--/--/---- --:--</span></p>
+                    <p><strong>Cliente:</strong> <span id="t-client">Consumidor Final</span></p>
+                    <p><strong>Teléfono:</strong> <span id="t-phone">---------</span></p>
+                </div>
+
+                <!-- Detalles de Equipo -->
+                <div class="py-2 border-b border-dashed border-gray-400 space-y-1">
+                    <p class="font-bold uppercase">Equipo / Diagnóstico:</p>
+                    <p id="t-equipment">Ninguno especificado</p>
+                    <p class="italic text-gray-700" id="t-concept">Sin descripción de concepto técnico.</p>
+                </div>
+
+                <!-- Tabla de Costos -->
+                <div class="py-2 space-y-1">
+                    <div class="flex justify-between">
+                        <span>Mano de Obra:</span>
+                        <span id="t-subtotal-service">$0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Repuestos / Partes:</span>
+                        <span id="t-subtotal-parts">$0</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-sm pt-1 border-t border-gray-300">
+                        <span>TOTAL A PAGAR:</span>
+                        <span id="t-total">$0</span>
+                    </div>
+                    <div class="flex justify-between text-gray-700">
+                        <span>Abonado:</span>
+                        <span id="t-paid">$0</span>
