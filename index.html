@@ -1,1345 +1,1073 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full">
+<html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PC+ | Sistema de Gestión y Soporte Técnico</title>
+    <title>PC+ | Servicios para tu computador - ERP/CRM</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontInter & Lucide Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        brand: {
-                            50: '#eef2ff',
-                            100: '#e0e7ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                            900: '#312e81',
-                        }
+                        primary: '#D90429',
+                        secondary: '#8D99AE',
+                        darkBg: '#1A1A1D',
+                        lightText: '#F8F9FA',
+                        lightGrayBg: '#E5E5E5'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif']
                     }
                 }
             }
         }
     </script>
-    <style>
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #print-ticket-modal, #print-ticket-modal * {
-                visibility: visible;
-            }
-            #print-ticket-modal {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-                background: white !important;
-            }
-            .no-print {
-                display: none !important;
-            }
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-50 text-slate-800 h-full font-sans antialiased flex flex-col md:flex-row overflow-hidden">
+<body class="bg-darkBg text-lightText font-sans min-h-screen flex flex-col md:flex-row">
 
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-    <!-- Mobile Header -->
-    <header class="md:hidden bg-slate-900 text-white p-4 flex justify-between items-center z-30 shadow-md">
-        <div class="flex items-center space-x-2">
-            <div class="bg-indigo-600 text-white font-black px-2.5 py-1 rounded-lg text-lg tracking-wider">PC+</div>
-            <div>
-                <span class="font-bold text-base">PC+ Soporte</span>
-                <p class="text-xs text-slate-400">Servicios para tu computador</p>
+    <!-- MENÚ LATERAL (IZQUIERDA) - FONDO ROJO ELÉCTRICO -->
+    <aside class="w-full md:w-72 bg-primary flex flex-col shadow-2xl justify-between shrink-0">
+        <div>
+            <!-- Header del Menú con Logo y Slogan -->
+            <div class="p-6 text-center border-b border-red-700/50">
+                <div class="inline-block p-2 bg-darkBg rounded-full shadow-lg mb-3">
+                    <i class="fa-solid fa-microchip text-primary text-3xl"></i>
+                </div>
+                <h1 class="font-heading font-extrabold text-2xl tracking-wider text-white">PC+</h1>
+                <p class="text-xs text-red-100 italic mt-1 font-medium">Servicios para tu computador</p>
+                <p class="text-[10px] text-red-200 mt-0.5"><i class="fa-solid fa-location-dot"></i> Pereira, Risaralda</p>
             </div>
+
+            <!-- Selector de Modo (Admin / Público General) -->
+            <div class="p-4 bg-red-800/40 border-b border-red-700/50 flex items-center justify-between">
+                <span class="text-xs font-semibold text-white uppercase tracking-wider">Modo Vista:</span>
+                <select id="roleSelector" onchange="switchRole(this.value)" class="bg-darkBg text-white text-xs px-2 py-1 rounded border border-red-500 focus:outline-none">
+                    <option value="admin">Administrador</option>
+                    <option value="public">Público General</option>
+                </select>
+            </div>
+
+            <!-- Navegación -->
+            <nav class="p-4 space-y-2" id="mainNav">
+                <a href="#" onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-red-700 transition font-medium text-sm">
+                    <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+                </a>
+                <a href="#" onclick="navigate('clients')" id="nav-clients" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-red-700 transition font-medium text-sm">
+                    <i class="fa-solid fa-users w-5"></i> Base de Clientes
+                </a>
+                <a href="#" onclick="navigate('services')" id="nav-services" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-red-700 transition font-medium text-sm">
+                    <i class="fa-solid fa-screwdriver-wrench w-5"></i> Solicitudes y Servicios
+                </a>
+                <a href="#" onclick="navigate('catalog')" id="nav-catalog" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-red-700 transition font-medium text-sm">
+                    <i class="fa-solid fa-tags w-5"></i> Catálogo y Precios
+                </a>
+                <a href="#" onclick="navigate('contact')" id="nav-contact" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-red-700 transition font-medium text-sm">
+                    <i class="fa-solid fa-headset w-5"></i> Contacto
+                </a>
+            </nav>
         </div>
-        <button onclick="toggleMobileMenu()" class="text-slate-200 hover:text-white p-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <i data-lucide="menu" class="w-6 h-6"></i>
-        </button>
-    </header>
 
-    <!-- Sidebar Navigation -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-slate-300 flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out border-r border-slate-800">
-        <div class="p-6 border-b border-slate-800 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="bg-gradient-to-tr from-indigo-600 to-violet-500 text-white font-extrabold px-3 py-1.5 rounded-xl text-xl shadow-lg shadow-indigo-500/30">PC+</div>
-                <div>
-                    <h1 class="font-bold text-white tracking-wide text-lg">PC+ ERP</h1>
-                    <p class="text-xs text-indigo-400 font-medium">Servicios para tu computador</p>
-                </div>
-            </div>
-            <button onclick="toggleMobileMenu()" class="md:hidden text-slate-400 hover:text-white">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-
-        <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            <a href="#dashboard" onclick="switchTab('dashboard')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-colors bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
-                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                Dashboard
-            </a>
-            <a href="#clients" onclick="switchTab('clients')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slate-300 hover:bg-slate-800 hover:text-white">
-                <i data-lucide="users" class="w-5 h-5"></i>
-                Base de Clientes
-            </a>
-            <a href="#services" onclick="switchTab('services')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slate-300 hover:bg-slate-800 hover:text-white">
-                <i data-lucide="clipboard-list" class="w-5 h-5"></i>
-                Solicitudes y Servicios
-            </a>
-            <a href="#catalog" onclick="switchTab('catalog')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slate-300 hover:bg-slate-800 hover:text-white">
-                <i data-lucide="tag" class="w-5 h-5"></i>
-                Catálogo y Precios
-            </a>
-        </nav>
-
-        <div class="p-4 border-t border-slate-800 bg-slate-950/40">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm border border-indigo-500/30">
-                    TE
-                </div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-white truncate">Técnico Especialista</p>
-                    <p class="text-[11px] text-slate-400 truncate">Pereira, Risaralda</p>
-                </div>
-            </div>
+        <div class="p-4 text-center text-xs text-red-200 border-t border-red-700/50">
+            &copy; 2026 PC+ ERP Systems
         </div>
     </aside>
 
-    <!-- Main Content Wrapper -->
-    <main class="flex-1 flex flex-col md:ml-64 h-full overflow-hidden bg-slate-50">
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 p-6 md:p-10 overflow-y-auto max-h-screen">
         
-        <!-- Top Desktop Bar -->
-        <header class="hidden md:flex bg-white border-b border-slate-200 px-8 py-4 justify-between items-center z-20 shadow-xs">
-            <div class="flex items-center space-x-2">
-                <span id="current-view-title" class="text-xl font-bold text-slate-800 tracking-tight">Panel de Control</span>
-                <span class="text-xs bg-indigo-50 text-indigo-700 font-semibold px-2.5 py-0.5 rounded-full border border-indigo-100">Pereira</span>
+        <!-- Header Superior con consecutivo y buscador global -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 mb-6 border-b border-gray-800 gap-4">
+            <div>
+                <h2 id="pageTitle" class="font-heading font-bold text-3xl text-white">Dashboard</h2>
+                <p id="pageSubtitle" class="text-secondary text-sm">Panel general de control y supervisión técnica</p>
             </div>
-            <div class="flex items-center gap-4">
-                <button onclick="openNewServiceModal()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm px-4 py-2 rounded-xl transition shadow-sm shadow-indigo-600/20">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    Nuevo Servicio
-                </button>
-                <button onclick="openNewClientModal()" class="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium text-sm px-4 py-2 rounded-xl transition">
-                    <i data-lucide="user-plus" class="w-4 h-4"></i>
-                    Nuevo Cliente
-                </button>
+            <div class="flex items-center gap-3">
+                <span class="px-3 py-1 bg-gray-800 text-secondary text-xs rounded-full border border-gray-700">
+                    <i class="fa-solid fa-shield-halved text-primary mr-1"></i> <span id="currentRoleBadge">Modo Administrador</span>
+                </span>
             </div>
         </header>
 
-        <!-- Scrollable Content Container -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-8">
-
-            <!-- ================= TAB 1: DASHBOARD ================= -->
-            <div id="tab-dashboard" class="tab-content space-y-6">
-                <!-- Metrics Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Pendientes Hoy</p>
-                            <h3 id="stat-pending-today" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
-                            <span class="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-md mt-2 inline-block">Requieren atención</span>
-                        </div>
-                        <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
-                            <i data-lucide="clock" class="w-7 h-7"></i>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Realizados (Mes)</p>
-                            <h3 id="stat-completed-month" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
-                            <span class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-md mt-2 inline-block">Servicios exitosos</span>
-                        </div>
-                        <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
-                            <i data-lucide="check-circle-2" class="w-7 h-7"></i>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Clientes</p>
-                            <h3 id="stat-total-clients" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
-                            <span class="text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-md mt-2 inline-block">Base activa</span>
-                        </div>
-                        <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
-                            <i data-lucide="users" class="w-7 h-7"></i>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Ingresos Estimados (Mes)</p>
-                            <h3 id="stat-estimated-revenue" class="text-2xl font-extrabold text-slate-900 mt-1">$0</h3>
-                            <span class="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded-md mt-2 inline-block">COP facturado</span>
-                        </div>
-                        <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
-                            <i data-lucide="dollar-sign" class="w-7 h-7"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Actions & Banner -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-gradient-to-r from-indigo-900 to-slate-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden flex flex-col justify-between">
-                        <div class="absolute right-0 bottom-0 opacity-10 translate-x-8 translate-y-8">
-                            <i data-lucide="cpu" class="w-64 h-64"></i>
-                        </div>
-                        <div class="relative z-10">
-                            <span class="bg-indigo-500/30 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full border border-indigo-400/30">Soporte Técnico Profesional</span>
-                            <h2 class="text-2xl md:text-3xl font-extrabold mt-3 tracking-tight">Bienvenido a PC+ ERP</h2>
-                            <p class="text-slate-300 mt-2 text-sm max-w-xl leading-relaxed">
-                                Gestiona tus clientes, programa asistencias presenciales o remotas, realiza listas de chequeo obligatorias y genera tickets de cobro profesionales en segundos.
-                            </p>
-                        </div>
-                        <div class="relative z-10 mt-6 flex flex-wrap gap-3">
-                            <button onclick="openNewServiceModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition shadow-md shadow-indigo-600/30 flex items-center gap-2">
-                                <i data-lucide="plus-circle" class="w-4 h-4"></i> Registrar Servicio
-                            </button>
-                            <button onclick="switchTab('clients')" class="bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition backdrop-blur-md flex items-center gap-2 border border-white/10">
-                                <i data-lucide="user-search" class="w-4 h-4"></i> Buscar Cliente
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs flex flex-col justify-between">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-lg">Accesos Rápidos</h3>
-                            <p class="text-xs text-slate-400 mt-1">Operaciones frecuentes del taller</p>
-                            
-                            <div class="mt-4 space-y-2">
-                                <button onclick="openNewClientModal()" class="w-full text-left px-4 py-3 rounded-xl bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-medium text-sm transition flex items-center justify-between group">
-                                    <span class="flex items-center gap-3">
-                                        <i data-lucide="user-plus" class="w-4 h-4 text-slate-400 group-hover:text-indigo-600"></i>
-                                        Registrar Nuevo Cliente
-                                    </span>
-                                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-indigo-600"></i>
-                                </button>
-                                <button onclick="switchTab('services'); filterServiceStatus('Pendiente');" class="w-full text-left px-4 py-3 rounded-xl bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-medium text-sm transition flex items-center justify-between group">
-                                    <span class="flex items-center gap-3">
-                                        <i data-lucide="clock" class="w-4 h-4 text-slate-400 group-hover:text-indigo-600"></i>
-                                        Ver Servicios Pendientes
-                                    </span>
-                                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-indigo-600"></i>
-                                </button>
-                                <button onclick="switchTab('catalog')" class="w-full text-left px-4 py-3 rounded-xl bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-medium text-sm transition flex items-center justify-between group">
-                                    <span class="flex items-center gap-3">
-                                        <i data-lucide="tag" class="w-4 h-4 text-slate-400 group-hover:text-indigo-600"></i>
-                                        Consultar Tarifas (COP)
-                                    </span>
-                                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-indigo-600"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="mt-4 pt-4 border-t border-slate-100 text-center">
-                            <span class="text-xs text-slate-400">Ciudad principal: <strong class="text-slate-700">Pereira</strong></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Today's Services Table -->
-                <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-6">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-lg">Servicios Programados / En Proceso</h3>
-                            <p class="text-xs text-slate-400">Agenda de intervenciones activas</p>
-                        </div>
-                        <button onclick="switchTab('services')" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-                            Ver todos los servicios <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                    <th class="py-3 px-4">ID</th>
-                                    <th class="py-3 px-4">Cliente</th>
-                                    <th class="py-3 px-4">Tipo</th>
-                                    <th class="py-3 px-4">Fecha / Hora</th>
-                                    <th class="py-3 px-4">Estado</th>
-                                    <th class="py-3 px-4 text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dashboard-services-tbody" class="divide-y divide-slate-100 text-sm">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ================= TAB 2: CLIENTS ================= -->
-            <div id="tab-clients" class="tab-content hidden space-y-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs">
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-800">Base de Datos de Clientes</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Gestión completa de clientes (CRUD) y direcciones en Pereira</p>
-                    </div>
-                    <button onclick="openNewClientModal()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm px-4 py-2.5 rounded-xl transition shadow-sm shadow-indigo-600/20">
-                        <i data-lucide="user-plus" class="w-4 h-4"></i>
-                        Registrar Cliente
-                    </button>
-                </div>
-
-                <!-- Search & Filters -->
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-4">
-                    <div class="relative flex-1">
-                        <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-                        <input type="text" id="client-search-input" oninput="renderClientsTable()" placeholder="Buscar por nombre completo o teléfono..." class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
-                    </div>
-                </div>
-
-                <!-- Clients Grid / Table -->
-                <div class="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/50">
-                                    <th class="py-3.5 px-6">ID</th>
-                                    <th class="py-3.5 px-6">Nombre Completo</th>
-                                    <th class="py-3.5 px-6">Teléfono / WhatsApp</th>
-                                    <th class="py-3.5 px-6">Correo Electrónico</th>
-                                    <th class="py-3.5 px-6">Dirección / Ciudad</th>
-                                    <th class="py-3.5 px-6 text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="clients-tbody" class="divide-y divide-slate-100 text-sm">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ================= TAB 3: SERVICES ================= -->
-            <div id="tab-services" class="tab-content hidden space-y-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs">
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-800">Solicitudes y Seguimiento de Servicios</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Control de asistencias técnicas presenciales y remotas</p>
-                    </div>
-                    <button onclick="openNewServiceModal()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm px-4 py-2.5 rounded-xl transition shadow-sm shadow-indigo-600/20">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        Nuevo Servicio
-                    </button>
-                </div>
-
-                <!-- Status Filter Pills -->
-                <div class="flex flex-wrap gap-2 items-center">
-                    <span class="text-xs font-semibold text-slate-400 mr-2">Filtrar estado:</span>
-                    <button onclick="filterServiceStatus('Todos')" class="service-filter-btn px-4 py-1.5 rounded-xl text-xs font-semibold transition bg-indigo-600 text-white shadow-sm" data-status="Todos">Todos</button>
-                    <button onclick="filterServiceStatus('Pendiente')" class="service-filter-btn px-4 py-1.5 rounded-xl text-xs font-semibold transition bg-white text-slate-600 border border-slate-200 hover:bg-slate-50" data-status="Pendiente">Pendiente</button>
-                    <button onclick="filterServiceStatus('En Proceso')" class="service-filter-btn px-4 py-1.5 rounded-xl text-xs font-semibold transition bg-white text-slate-600 border border-slate-200 hover:bg-slate-50" data-status="En Proceso">En Proceso</button>
-                    <button onclick="filterServiceStatus('Realizado')" class="service-filter-btn px-4 py-1.5 rounded-xl text-xs font-semibold transition bg-white text-slate-600 border border-slate-200 hover:bg-slate-50" data-status="Realizado">Realizado</button>
-                    <button onclick="filterServiceStatus('Cancelado')" class="service-filter-btn px-4 py-1.5 rounded-xl text-xs font-semibold transition bg-white text-slate-600 border border-slate-200 hover:bg-slate-50" data-status="Cancelado">Cancelado</button>
-                </div>
-
-                <!-- Services Table -->
-                <div class="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/50">
-                                    <th class="py-3.5 px-6">ID Serv.</th>
-                                    <th class="py-3.5 px-6">Cliente Vinculado</th>
-                                    <th class="py-3.5 px-6">Tipo Asistencia</th>
-                                    <th class="py-3.5 px-6">Fecha y Hora</th>
-                                    <th class="py-3.5 px-6">Estado</th>
-                                    <th class="py-3.5 px-6 text-right">Acciones / Flujo</th>
-                                </tr>
-                            </thead>
-                            <tbody id="services-tbody" class="divide-y divide-slate-100 text-sm">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ================= TAB 4: CATALOG ================= -->
-            <div id="tab-catalog" class="tab-content hidden space-y-6">
-                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-800">Catálogo de Servicios y Precios (COP)</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Tarifas base configuradas para facturación y tickets</p>
-                    </div>
-                    <span class="text-xs bg-emerald-50 text-emerald-700 font-semibold px-3 py-1 rounded-full border border-emerald-100 flex items-center gap-1.5">
-                        <i data-lucide="shield-check" class="w-4 h-4"></i> Precios Actualizados COP
-                    </span>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="catalog-grid">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-
+        <!-- CONTENEDOR DE MÓDULOS -->
+        <div id="appContainer">
+            <!-- Inyectado dinámicamente mediante JS -->
         </div>
+
     </main>
 
-    <!-- ================= MODALS & DRAWERS ================= -->
-
-    <!-- Modal: New/Edit Client -->
-    <div id="client-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="client-modal-title" class="text-lg font-bold text-slate-800">Registrar Nuevo Cliente</h3>
-                <button onclick="closeClientModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+    <!-- MODAL GENERAL PARA IMÁGENES / TICKETS -->
+    <div id="globalModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="modalContent">
+                <!-- Contenido dinámico del modal -->
             </div>
-            <form id="client-form" onsubmit="saveClient(event)" class="space-y-4">
-                <input type="hidden" id="client-id">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre Completo *</label>
-                    <input type="text" id="client-name" required placeholder="Ej. Carlos Mario Giraldo" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono / WhatsApp *</label>
-                        <input type="text" id="client-phone" required placeholder="Ej. 3104567890" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Correo Electrónico</label>
-                        <input type="email" id="client-email" placeholder="carlos@correo.com" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Dirección de Servicio</label>
-                        <input type="text" id="client-address" placeholder="Cl. 20 # 7-15 apt 301" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Ciudad</label>
-                        <input type="text" id="client-city" value="Pereira" readonly class="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Notas Adicionales</label>
-                    <textarea id="client-notes" rows="2" placeholder="Referencias de ubicación, equipos habituales..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white"></textarea>
-                </div>
-                <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
-                    <button type="button" onclick="closeClientModal()" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-sm shadow-indigo-600/20">Guardar Cliente</button>
-                </div>
-            </form>
         </div>
     </div>
 
-    <!-- Modal: New/Edit Service -->
-    <div id="service-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="service-modal-title" class="text-lg font-bold text-slate-800">Programar Nueva Solicitud</h3>
-                <button onclick="closeServiceModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <form id="service-form" onsubmit="saveService(event)" class="space-y-4">
-                <input type="hidden" id="service-id">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cliente Vinculado *</label>
-                    <select id="service-client-id" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
-                        <!-- Populated dynamically -->
-                    </select>
+    <!-- JAVASCRIPT DE LÓGICA Y ESTADO -->
+    <script>
+        // ESTADO GLOBAL EN MEMORIA / LOCALSTORAGE
+        let appState = {
+            role: 'admin',
+            activeTab: 'dashboard',
+            clients: JSON.parse(localStorage.getItem('pc_clients')) || [
+                { id: 1, name: 'Carlos Mario Gómez', phone: '3112345678', email: 'carlos@gmail.com', address: 'Calle 14 # 23-45', city: 'Pereira', type: 'Cliente', notes: 'Cliente frecuente' },
+                { id: 2, name: 'Ana Sofía Restrepo', phone: '3009876543', email: 'ana@yahoo.es', address: 'Av. Circunvalar # 5-10', city: 'Pereira', type: 'Prospecto', notes: 'Interesada en mantenimiento de portátil' }
+            ],
+            services: JSON.parse(localStorage.getItem('pc_services')) || [
+                {
+                    id: 101,
+                    clientId: 1,
+                    type: 'Presencial',
+                    date: '2026-11-02',
+                    time: '10:00',
+                    status: 'En Proceso',
+                    selectedCatalogIds: [3, 5], // Limpieza hardware, Mantenimiento Estándar
+                    receptionChecklist: {
+                        equipType: 'Portátil', brand: 'Asus', model: 'ZenBook 14', serial: 'AS987654321',
+                        os: 'Windows 11 Pro', pass: '1234', symptoms: 'Lentitud extrema y ruido en ventilador.', notes: 'Rayón leve en tapa superior.',
+                        items: {
+                            chasis: { na: false, note: 'Buen estado' },
+                            pantalla: { na: false, note: 'Sin pixeles muertos' }
+                        }
+                    },
+                    departureChecklist: null
+                }
+            ],
+            catalogServices: [
+                { id: 1, name: 'Servicio en Domicilio del Cliente', price: 20000, img: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=300', desc: 'Desplazamiento a domicilio en Pereira.' },
+                { id: 2, name: 'Capacitaciones Personalizadas', price: 25000, img: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=300', desc: 'Clases en Excel, Office y Google Workspace.' },
+                { id: 3, name: 'Limpieza de Hardware', price: 30000, img: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=300', desc: 'Limpieza interna y externa de componentes.' },
+                { id: 4, name: 'Mantenimiento Estándar - Remoto', price: 40000, img: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?w=300', desc: 'Optimización remota por AnyDesk/TeamViewer.' },
+                { id: 5, name: 'Mantenimiento Estándar', price: 50000, img: 'https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=300', desc: 'Diagnóstico, optimización y drivers.' },
+                { id: 6, name: 'Reviva su PC Viejo', price: 60000, img: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300', desc: 'Puesta a punto para equipos antiguos.' },
+                { id: 7, name: 'Recuperación y/o Restauración de Información', price: 60000, img: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=300', desc: 'Rescate seguro de archivos y datos.' },
+                { id: 8, name: 'Repotencie su Computador', price: 60000, img: 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=300', desc: 'Instalación de SSD y ampliación de RAM.' },
+                { id: 9, name: 'Reinstalación de Windows y Puesta a Punto del PC', price: 80000, img: 'https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=300', desc: 'Formateo y configuración limpia de sistema operativo.' }
+            ],
+            catalogProducts: [
+                { id: 101, name: 'Venta de Licencias de Software', price: 50000, img: 'https://images.unsplash.com/photo-1618401471353-b98aedd04e11?w=300', desc: 'Licenciamiento original y seguro.' },
+                { id: 102, name: 'Venta de Partes y Accesorios', price: 45000, img: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=300', desc: 'Periféricos, cables, discos SSD y memorias.' }
+            ]
+        };
+
+        function saveData() {
+            localStorage.setItem('pc_clients', JSON.stringify(appState.clients));
+            localStorage.setItem('pc_services', JSON.stringify(appState.services));
+        }
+
+        function switchRole(role) {
+            appState.role = role;
+            document.getElementById('currentRoleBadge').innerText = role === 'admin' ? 'Modo Administrador' : 'Público General';
+            
+            // Restringir navegación si es público general
+            const navClients = document.getElementById('nav-clients');
+            const navServices = document.getElementById('nav-services');
+            const navDashboard = document.getElementById('nav-dashboard');
+
+            if (role === 'public') {
+                navClients.style.display = 'none';
+                navServices.style.display = 'none';
+                navDashboard.style.display = 'none';
+                navigate('catalog');
+            } else {
+                navClients.style.display = 'flex';
+                navServices.style.display = 'flex';
+                navDashboard.style.display = 'flex';
+                navigate('dashboard');
+            }
+        }
+
+        function navigate(tab) {
+            if (appState.role === 'public' && tab !== 'catalog' && tab !== 'contact') {
+                alert('Acceso restringido para el público general. Solo puede visualizar Catálogos y Contacto.');
+                return;
+            }
+            appState.activeTab = tab;
+            render();
+        }
+
+        function render() {
+            const container = document.getElementById('appContainer');
+            const titleEl = document.getElementById('pageTitle');
+            const subtitleEl = document.getElementById('pageSubtitle');
+
+            // Actualizar clases activas del menú
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('bg-red-700', 'shadow'));
+            const activeNav = document.getElementById(`nav-${appState.activeTab}`);
+            if (activeNav) activeNav.classList.add('bg-red-700', 'shadow');
+
+            switch(appState.activeTab) {
+                case 'dashboard':
+                    titleEl.innerText = 'Dashboard Principal';
+                    subtitleEl.innerText = 'Resumen general de operaciones de soporte técnico PC+';
+                    container.innerHTML = renderDashboard();
+                    break;
+                case 'clients':
+                    titleEl.innerText = 'Base de Datos de Clientes';
+                    subtitleEl.innerText = 'Gestión de clientes y prospectos registrados';
+                    container.innerHTML = renderClients();
+                    break;
+                case 'services':
+                    titleEl.innerText = 'Solicitudes y Servicios';
+                    subtitleEl.innerText = 'Control de órdenes de servicio, estados y seguimientos';
+                    container.innerHTML = renderServices();
+                    break;
+                case 'catalog':
+                    titleEl.innerText = 'Catálogo de Servicios y Productos';
+                    subtitleEl.innerText = 'Tarifas base vigentes en Pesos Colombianos (COP)';
+                    container.innerHTML = renderCatalog();
+                    break;
+                case 'contact':
+                    titleEl.innerText = 'Contacto y Ubicación';
+                    subtitleEl.innerText = 'Información oficial de atención al cliente';
+                    container.innerHTML = renderContact();
+                    break;
+            }
+        }
+
+        // ================= MÓDULO DASHBOARD =================
+        function renderDashboard() {
+            const pending = appState.services.filter(s => s.status === 'Pendiente').length;
+            const inProgress = appState.services.filter(s => s.status === 'En Proceso').length;
+            const completed = appState.services.filter(s => s.status === 'Realizado').length;
+            const cancelled = appState.services.filter(s => s.status === 'Cancelado').length;
+            const totalClients = appState.clients.length;
+            const prospects = appState.clients.filter(c => c.type === 'Prospecto').length;
+            
+            // Ingresos estimados mes (suma de servicios realizados)
+            let estimatedIncome = 0;
+            appState.services.filter(s => s.status === 'Realizado').forEach(s => {
+                s.selectedCatalogIds.forEach(catId => {
+                    const item = appState.catalogServices.find(c => c.id === catId);
+                    if (item) estimatedIncome += item.price;
+                });
+            });
+
+            return `
+                <div class="space-y-6">
+                    <!-- Tarjetas de Estadísticas -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl shadow-lg border-l-4 border-l-yellow-500">
+                            <p class="text-xs text-secondary font-medium">Servicios Pendientes</p>
+                            <h3 class="text-3xl font-bold font-heading text-white mt-1">${pending}</h3>
+                        </div>
+                        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl shadow-lg border-l-4 border-l-blue-500">
+                            <p class="text-xs text-secondary font-medium">En Proceso / Taller</p>
+                            <h3 class="text-3xl font-bold font-heading text-white mt-1">${inProgress}</h3>
+                        </div>
+                        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl shadow-lg border-l-4 border-l-green-500">
+                            <p class="text-xs text-secondary font-medium">Realizados este Mes</p>
+                            <h3 class="text-3xl font-bold font-heading text-white mt-1">${completed}</h3>
+                        </div>
+                        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl shadow-lg border-l-4 border-l-primary">
+                            <p class="text-xs text-secondary font-medium">Ingresos Estimados (COP)</p>
+                            <h3 class="text-2xl font-bold font-heading text-white mt-1">$ ${estimatedIncome.toLocaleString()}</h3>
+                        </div>
+                    </div>
+
+                    <!-- Métricas Secundarias de Clientes -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-secondary">Total Clientes Registrados</p>
+                                <h4 class="text-xl font-bold text-white">${totalClients}</h4>
+                            </div>
+                            <i class="fa-solid fa-users text-2xl text-secondary"></i>
+                        </div>
+                        <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-secondary">Prospectos Activos</p>
+                                <h4 class="text-xl font-bold text-white">${prospects}</h4>
+                            </div>
+                            <i class="fa-solid fa-user-plus text-2xl text-primary"></i>
+                        </div>
+                    </div>
+
+                    <!-- Accesos Rápidos -->
+                    <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-lg">
+                        <h3 class="font-heading font-bold text-lg text-white mb-4"><i class="fa-solid fa-bolt text-primary mr-2"></i> Accesos Rápidos</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                            <button onclick="openClientModal()" class="p-3 bg-zinc-800 hover:bg-primary/20 border border-zinc-700 hover:border-primary rounded-lg text-left transition group">
+                                <i class="fa-solid fa-user-plus text-primary text-lg mb-2 block"></i>
+                                <span class="text-xs font-semibold text-white group-hover:text-primary">Registrar Cliente</span>
+                            </button>
+                            <button onclick="openServiceModal()" class="p-3 bg-zinc-800 hover:bg-primary/20 border border-zinc-700 hover:border-primary rounded-lg text-left transition group">
+                                <i class="fa-solid fa-file-circle-plus text-primary text-lg mb-2 block"></i>
+                                <span class="text-xs font-semibold text-white group-hover:text-primary">Registrar Servicio</span>
+                            </button>
+                            <button onclick="navigate('services')" class="p-3 bg-zinc-800 hover:bg-primary/20 border border-zinc-700 hover:border-primary rounded-lg text-left transition group">
+                                <i class="fa-solid fa-clock text-primary text-lg mb-2 block"></i>
+                                <span class="text-xs font-semibold text-white group-hover:text-primary">Servicios Pendientes</span>
+                            </button>
+                            <button onclick="navigate('catalog')" class="p-3 bg-zinc-800 hover:bg-primary/20 border border-zinc-700 hover:border-primary rounded-lg text-left transition group">
+                                <i class="fa-solid fa-tags text-primary text-lg mb-2 block"></i>
+                                <span class="text-xs font-semibold text-white group-hover:text-primary">Consultar Tarifas</span>
+                            </button>
+                            <button onclick="navigate('clients')" class="p-3 bg-zinc-800 hover:bg-primary/20 border border-zinc-700 hover:border-primary rounded-lg text-left transition group">
+                                <i class="fa-solid fa-magnifying-glass text-primary text-lg mb-2 block"></i>
+                                <span class="text-xs font-semibold text-white group-hover:text-primary">Buscar Cliente</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            `;
+        }
+
+        // ================= MÓDULO CLIENTES =================
+        function renderClients() {
+            return `
+                <div class="space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-search absolute left-3 top-3 text-secondary"></i>
+                            <input type="text" id="clientSearch" oninput="filterClients(this.value)" placeholder="Buscar cliente por nombre o teléfono..." class="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-primary">
+                        </div>
+                        <button onclick="openClientModal()" class="bg-primary hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-user-plus"></i> Nuevo Cliente / Prospecto
+                        </button>
+                    </div>
+
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-lg">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-zinc-800 text-secondary text-xs uppercase border-b border-zinc-700">
+                                        <th class="p-3">ID</th>
+                                        <th class="p-3">Nombre Completo</th>
+                                        <th class="p-3">Teléfono / WhatsApp</th>
+                                        <th class="p-3">Correo</th>
+                                        <th class="p-3">Ciudad / Dirección</th>
+                                        <th class="p-3">Tipo</th>
+                                        <th class="p-3 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clientsTableBody" class="divide-y divide-zinc-800">
+                                    ${generateClientsTableRows(appState.clients)}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateClientsTableRows(clients) {
+            if (clients.length === 0) {
+                return `<tr><td colspan="7" class="p-6 text-center text-secondary">No se encontraron clientes registrados.</td></tr>`;
+            }
+            return clients.map(c => `
+                <tr class="hover:bg-zinc-800/50 transition">
+                    <td class="p-3 font-mono text-secondary">#${c.id}</td>
+                    <td class="p-3 font-semibold text-white">${c.name}</td>
+                    <td class="p-3"><a href="https://wa.me/57${c.phone}" target="_blank" class="text-green-400 hover:underline"><i class="fa-brands fa-whatsapp mr-1"></i>${c.phone}</a></td>
+                    <td class="p-3 text-gray-300">${c.email}</td>
+                    <td class="p-3 text-gray-400">${c.city} - ${c.address || 'N/A'}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded text-xs font-semibold ${c.type === 'Prospecto' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-primary/20 text-primary border border-primary/30'}">
+                            ${c.type}
+                        </span>
+                    </td>
+                    <td class="p-3 text-right space-x-2">
+                        <button onclick="viewClientHistory(${c.id})" class="text-secondary hover:text-white p-1" title="Ver historial"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button onclick="editClient(${c.id})" class="text-secondary hover:text-white p-1" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterClients(query) {
+            const q = query.toLowerCase();
+            const filtered = appState.clients.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q));
+            document.getElementById('clientsTableBody').innerHTML = generateClientsTableRows(filtered);
+        }
+
+        // ================= MÓDULO SOLICITUDES Y SERVICIOS =================
+        function renderServices() {
+            return `
+                <div class="space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-search absolute left-3 top-3 text-secondary"></i>
+                            <input type="text" id="serviceSearch" oninput="filterServices(this.value)" placeholder="Buscar por ticket, cliente o equipo..." class="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-primary">
+                        </div>
+                        <button onclick="openServiceModal()" class="bg-primary hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-file-circle-plus"></i> Registrar Nuevo Servicio
+                        </button>
+                    </div>
+
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-lg">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-zinc-800 text-secondary text-xs uppercase border-b border-zinc-700">
+                                        <th class="p-3">Ticket</th>
+                                        <th class="p-3">Cliente</th>
+                                        <th class="p-3">Tipo Asistencia</th>
+                                        <th class="p-3">Fecha / Hora</th>
+                                        <th class="p-3">Estado</th>
+                                        <th class="p-3 text-right">Gestión / Checklist / Tickets</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="servicesTableBody" class="divide-y divide-zinc-800">
+                                    ${generateServicesTableRows(appState.services)}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateServicesTableRows(services) {
+            if (services.length === 0) {
+                return `<tr><td colspan="6" class="p-6 text-center text-secondary">No hay solicitudes de servicio registradas.</td></tr>`;
+            }
+            return services.map(s => {
+                const client = appState.clients.find(c => c.id == s.clientId) || { name: 'Cliente Desconocido' };
+                let statusColor = 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+                if (s.status === 'En Proceso') statusColor = 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+                if (s.status === 'Realizado') statusColor = 'bg-green-500/20 text-green-400 border-green-500/30';
+                if (s.status === 'Cancelado') statusColor = 'bg-red-500/20 text-red-400 border-red-500/30';
+
+                return `
+                    <tr class="hover:bg-zinc-800/50 transition">
+                        <td class="p-3 font-mono text-primary font-bold">#${s.id}</td>
+                        <td class="p-3 font-semibold text-white">${client.name}</td>
+                        <td class="p-3 text-gray-300">${s.type}</td>
+                        <td class="p-3 text-gray-400">${s.date} - ${s.time}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-1 rounded text-xs font-semibold border ${statusColor}">
+                                ${s.status}
+                            </span>
+                        </td>
+                        <td class="p-3 text-right space-x-1">
+                            <button onclick="openReceptionChecklist(${s.id})" class="px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-xs rounded text-white border border-zinc-700" title="Checklist Recepción">
+                                <i class="fa-solid fa-clipboard-check text-primary mr-1"></i> Recepción
+                            </button>
+                            <button onclick="openDepartureChecklist(${s.id})" class="px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-xs rounded text-white border border-zinc-700" title="Checklist Salida / Realizar">
+                                <i class="fa-solid fa-square-check text-green-400 mr-1"></i> Salida
+                            </button>
+                            ${s.status === 'Realizado' ? `
+                                <button onclick="generateServiceSummary(${s.id})" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-xs rounded text-white" title="Resumen PDF">
+                                    <i class="fa-solid fa-file-pdf"></i> Resumen
+                                </button>
+                                <button onclick="generateServiceTicket(${s.id})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-xs rounded text-white" title="Ticket Cobro">
+                                    <i class="fa-solid fa-receipt"></i> Ticket
+                                </button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterServices(query) {
+            const q = query.toLowerCase();
+            const filtered = appState.services.filter(s => {
+                const client = appState.clients.find(c => c.id == s.clientId) || {};
+                return s.id.toString().includes(q) || client.name?.toLowerCase().includes(q) || s.status.toLowerCase().includes(q);
+            });
+            document.getElementById('servicesTableBody').innerHTML = generateServicesTableRows(filtered);
+        }
+
+        // ================= MÓDULO CATÁLOGO =================
+        function renderCatalog() {
+            return `
+                <div class="space-y-8">
+                    <!-- Catálogo de Servicios -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tipo de Asistencia *</label>
-                        <select id="service-type" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
-                            <option value="Presencial">Presencial</option>
-                            <option value="Remota">Remota</option>
+                        <h3 class="font-heading font-bold text-xl text-white mb-4"><i class="fa-solid fa-screwdriver text-primary mr-2"></i> Servicios Destacados y Tarifas Base</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${appState.catalogServices.map(item => `
+                                <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-lg flex flex-col justify-between">
+                                    <div>
+                                        <img src="${item.img}" alt="${item.name}" class="w-full h-40 object-cover cursor-pointer hover:opacity-90 transition" onclick="zoomImage('${item.img}', '${item.name}')">
+                                        <div class="p-5">
+                                            <h4 class="font-heading font-bold text-white text-base mb-1">${item.name}</h4>
+                                            <p class="text-secondary text-xs mb-3">${item.desc}</p>
+                                        </div>
+                                    </div>
+                                    <div class="p-5 pt-0 flex items-center justify-between border-t border-zinc-800 mt-2">
+                                        <span class="text-primary font-bold font-heading text-lg">$ ${item.price.toLocaleString()} COP</span>
+                                        <span class="text-xs bg-zinc-800 px-2.5 py-1 rounded text-secondary">Tarifa Base</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Catálogo de Productos / Accesorios -->
+                    <div>
+                        <h3 class="font-heading font-bold text-xl text-white mb-4"><i class="fa-solid fa-box-archive text-primary mr-2"></i> Productos, Licencias y Partes</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            ${appState.catalogProducts.map(item => `
+                                <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-lg flex flex-col justify-between">
+                                    <div>
+                                        <img src="${item.img}" alt="${item.name}" class="w-full h-40 object-cover cursor-pointer hover:opacity-90 transition" onclick="zoomImage('${item.img}', '${item.name}')">
+                                        <div class="p-5">
+                                            <h4 class="font-heading font-bold text-white text-base mb-1">${item.name}</h4>
+                                            <p class="text-secondary text-xs mb-3">${item.desc}</p>
+                                        </div>
+                                    </div>
+                                    <div class="p-5 pt-0 flex items-center justify-between border-t border-zinc-800 mt-2">
+                                        <span class="text-primary font-bold font-heading text-lg">$ ${item.price.toLocaleString()} COP</span>
+                                        <span class="text-xs bg-zinc-800 px-2.5 py-1 rounded text-secondary">Disponible</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ================= MÓDULO CONTACTO =================
+        function renderContact() {
+            return `
+                <div class="max-w-4xl mx-auto space-y-8">
+                    <!-- Tarjeta de Presentación Empresa -->
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-xl text-center relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
+                        <div class="inline-block p-4 bg-zinc-800 rounded-full shadow-inner mb-4">
+                            <i class="fa-solid fa-microchip text-primary text-4xl"></i>
+                        </div>
+                        <h2 class="font-heading font-extrabold text-3xl text-white">PC+</h2>
+                        <p class="text-primary font-medium text-sm mt-1">Servicios para tu computador</p>
+                        <p class="text-secondary text-sm mt-3 max-w-lg mx-auto">
+                            Soluciones técnicas profesionales para equipos de hogar y oficinas. Diagnóstico, mantenimiento, optimización y soporte técnico garantizado.
+                        </p>
+
+                        <!-- Botones de Acción Directa -->
+                        <div class="flex flex-wrap justify-center gap-4 mt-6">
+                            <a href="https://wa.me/5763291031?text=Hola%20PC+,%20necesito%20soporte%20técnico%20para%20mi%20computador" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-2 shadow-lg">
+                                <i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp: +57 6 3291031
+                            </a>
+                            <a href="mailto:pcmas.pereira@gmail.com" class="bg-primary hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-2 shadow-lg">
+                                <i class="fa-solid fa-envelope text-lg"></i> Correo: pcmas.pereira@gmail.com
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Llamado a la Acción (CTA) Solicitado -->
+                    <div class="bg-gradient-to-r from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 shadow-lg">
+                        <h3 class="font-heading font-bold text-lg text-white mb-2"><i class="fa-solid fa-bullhorn text-primary mr-2"></i> Hablemos: Cuéntanos qué necesita tu computador</h3>
+                        <p class="text-gray-300 text-sm leading-relaxed">
+                            Escríbenos con el modelo del equipo y la falla. Te confirmamos disponibilidad y agendamos la asistencia presencial o remota.
+                        </p>
+                    </div>
+
+                    <!-- Horario de Atención -->
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-lg">
+                        <h3 class="font-heading font-bold text-lg text-white mb-4"><i class="fa-solid fa-clock text-primary mr-2"></i> Horario de Atención</h3>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li class="flex justify-between border-b border-zinc-800 pb-2">
+                                <span class="text-secondary">Lunes a Viernes (no festivos):</span>
+                                <span class="font-semibold text-white">08:00 am a 12:00 m - 01:00 pm a 06:00 pm</span>
+                            </li>
+                            <li class="flex justify-between pt-1">
+                                <span class="text-secondary">Sábado:</span>
+                                <span class="font-semibold text-white">8:00 am a 12:00 m</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ================= MODALES Y ACCIONES =================
+        function closeModal() {
+            document.getElementById('globalModal').classList.add('hidden');
+        }
+
+        function zoomImage(src, title) {
+            const modal = document.getElementById('globalModal');
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `
+                <div class="text-center space-y-4">
+                    <h3 class="font-heading font-bold text-lg text-white">${title}</h3>
+                    <img src="${src}" class="max-h-[70vh] mx-auto rounded-lg shadow-xl border border-zinc-800">
+                </div>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        function openClientModal() {
+            const modal = document.getElementById('globalModal');
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `
+                <h3 class="font-heading font-bold text-xl text-white mb-4">Registrar Nuevo Cliente / Prospecto</h3>
+                <form onsubmit="saveClient(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-secondary mb-1">Nombre Completo</label>
+                        <input type="text" id="cName" required class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-primary">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Teléfono / WhatsApp</label>
+                            <input type="text" id="cPhone" required class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-primary">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Correo Electrónico</label>
+                            <input type="email" id="cEmail" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-primary">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Dirección de Servicio</label>
+                            <input type="text" id="cAddress" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-primary" placeholder="Ej: Calle 20 # 5-14">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Ciudad</label>
+                            <input type="text" id="cCity" value="Pereira" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-primary">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-secondary mb-1">Tipo de Cliente</label>
+                        <select id="cType" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-primary">
+                            <option value="Cliente">Cliente</option>
+                            <option value="Prospecto">Prospecto</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estado del Servicio *</label>
-                        <select id="service-status" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
+                        <label class="block text-xs text-secondary mb-1">Notas Adicionales</label>
+                        <textarea id="cNotes" rows="2" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-primary"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-zinc-800 text-gray-300 rounded-lg text-sm">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 bg-primary hover:bg-red-700 text-white rounded-lg text-sm font-semibold">Guardar Cliente</button>
+                    </div>
+                </form>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        function saveClient(e) {
+            e.preventDefault();
+            const newClient = {
+                id: appState.clients.length > 0 ? Math.max(...appState.clients.map(c => c.id)) + 1 : 1,
+                name: document.getElementById('cName').value,
+                phone: document.getElementById('cPhone').value,
+                email: document.getElementById('cEmail').value,
+                address: document.getElementById('cAddress').value,
+                city: document.getElementById('cCity').value || 'Pereira',
+                type: document.getElementById('cType').value,
+                notes: document.getElementById('cNotes').value
+            };
+            appState.clients.push(newClient);
+            saveData();
+            closeModal();
+            render();
+        }
+
+        function openServiceModal() {
+            const modal = document.getElementById('globalModal');
+            const content = document.getElementById('modalContent');
+            const clientOptions = appState.clients.map(c => `<option value="${c.id}">${c.name} (${c.type})</option>`).join('');
+            const catalogCheckboxes = appState.catalogServices.map(cs => `
+                <label class="flex items-center gap-2 text-sm text-gray-300 bg-zinc-800/60 p-2 rounded border border-zinc-700">
+                    <input type="checkbox" name="serviceCatalog" value="${cs.id}" class="accent-primary">
+                    <span class="flex-1">${cs.name}</span>
+                    <span class="text-primary font-bold">$${cs.price.toLocaleString()}</span>
+                </label>
+            `).join('');
+
+            content.innerHTML = `
+                <h3 class="font-heading font-bold text-xl text-white mb-4">Registrar Nueva Solicitud de Servicio</h3>
+                <form onsubmit="saveService(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-secondary mb-1">Cliente Vinculado</label>
+                        <select id="sClient" required class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-primary">
+                            ${clientOptions}
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Tipo Asistencia</label>
+                            <select id="sType" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-primary">
+                                <option value="Presencial">Presencial</option>
+                                <option value="Remota">Remota</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Fecha Programada</label>
+                            <input type="date" id="sDate" required value="${new Date().toISOString().split('T')[0]}" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-primary">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Hora Programada</label>
+                            <input type="time" id="sTime" required value="09:00" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-primary">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-secondary mb-1">Seleccionar Servicios del Catálogo (Uno o más)</label>
+                        <div class="space-y-2 max-h-48 overflow-y-auto p-2 bg-zinc-900 border border-zinc-700 rounded-lg">
+                            ${catalogCheckboxes}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-secondary mb-1">Estado del Servicio</label>
+                        <select id="sStatus" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-primary">
                             <option value="Pendiente">Pendiente</option>
                             <option value="En Proceso">En Proceso</option>
                             <option value="Realizado">Realizado</option>
                             <option value="Cancelado">Cancelado</option>
                         </select>
                     </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha Programada *</label>
-                        <input type="date" id="service-date" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-zinc-800 text-gray-300 rounded-lg text-sm">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 bg-primary hover:bg-red-700 text-white rounded-lg text-sm font-semibold">Guardar Servicio</button>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Hora Programada *</label>
-                        <input type="time" id="service-time" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Notas / Descripción del Problema</label>
-                    <textarea id="service-notes" rows="3" placeholder="Descripción del equipo, síntomas reportados por el cliente..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white"></textarea>
-                </div>
-                <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
-                    <button type="button" onclick="closeServiceModal()" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-sm shadow-indigo-600/20">Guardar Solicitud</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal: Client History / Timeline Drawer -->
-    <div id="history-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
-                <div>
-                    <h3 id="history-client-name" class="text-lg font-bold text-slate-800">Historial de Servicios</h3>
-                    <p id="history-client-meta" class="text-xs text-slate-400">Teléfono: -- | Dirección: --</p>
-                </div>
-                <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <div id="history-timeline-container" class="flex-1 overflow-y-auto space-y-4 pr-2">
-                <!-- Populated by JS -->
-            </div>
-            <div class="pt-4 border-t border-slate-100 flex justify-end">
-                <button onclick="closeHistoryModal()" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Technical Checklist & Workflow (Obligatory before starting diagnosis/processing) -->
-    <div id="checklist-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-3xl w-full p-6 md:p-8 shadow-2xl border border-slate-100 max-h-[92vh] flex flex-col">
-            <div class="flex justify-between items-start pb-4 border-b border-slate-100">
-                <div>
-                    <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">Checklist de Revisión Obligatorio</span>
-                    <h3 id="checklist-modal-title" class="text-xl font-bold text-slate-900 mt-1">Diagnóstico Inicial de Equipo</h3>
-                    <p id="checklist-modal-subtitle" class="text-xs text-slate-400">Cliente: --</p>
-                </div>
-                <button onclick="closeChecklistModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <div class="flex-1 overflow-y-auto py-4 space-y-6 pr-2">
-                <!-- Section 1: Inspección Física -->
-                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                    <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2 mb-3">
-                        <i data-lucide="ハードウェア" class="w-4 h-4 text-indigo-600"></i>
-                        1. Inspección Física del Equipo
-                    </h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                        <label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300">
-                            <input type="checkbox" data-check-cat="fisica" data-check-item="chasis" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                            <span>Estado del Chasis (Rayones / Golpes)</span>
-                        </label>
-                        <label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300">
-                            <input type="checkbox" data-check-cat="fisica" data-check-item="limpieza" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                            <span>Limpieza Interna / Polvo Acumulado</span>
-                        </label>
-                        <label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300">
-                            <input type="checkbox" data-check-cat="fisica" data-check-item="ventiladores" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                            <span>Funcionamiento de Ventiladores / Ruidos</span>
-                        </label>
-                        <label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300">
-                            <input type="checkbox" data-check-cat="fisica" data-check-item="puertos" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                            <span>Estado de Puertos USB y Pantalla</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Section 2: Diagnóstico Inicial -->
-                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                    <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2 mb-3">
-                        <i data-lucide="cpu" class="w-4 h-4 text-indigo-600"></i>
-                        2. Diagnóstico Inicial (Hardware / Rendimiento)
-                    </h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                        <label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300">
-                            <input type="checkbox" data-check-cat="diagnostico" data-check-item="temperatura" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                            <span>Temperatura de CPU (Normal / Alta)</span>
-                        </label>
-                        <label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300">
-                            <input type="checkbox" data-check-cat="diagnostico" data-check-item="disco" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                            <span>Salud de Disco Duro / SSD (S.M.A.R.T.)</span>
-                        </label>
-                        <label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300">
-                            <input type="checkbox" data-check-cat="diagnostico" data-check-item="ram" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                            <span>Capacidad y Estado de Memoria RAM</span>
-                        </label>
-                        <label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300">
-                            <input type="checkbox" data-check-cat="diagnostico" data-check-item="bateria" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                            <span>Estado de Batería y Autonomía</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Section 3: Software -->
-                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                    <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2 mb-3">
-                        <i data-lucide="monitor" class="w-4 h-4 text-indigo-600"></i>
-                        3. Software y Sistema Operativo
-                    </h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-                        <label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300">
-                            <input type="checkbox" data-check-cat="software" data-check-item="so" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                            <span>Sistema Operativo Actual & Updates</span>
-                        </label>
-                        <label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300">
-                            <input type="checkbox" data-check-cat="software" data-check-item="virus" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                            <span>Presencia de Virus / Malware</span>
-                        </label>
-                        <label class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300">
-                            <input type="checkbox" data-check-cat="software" data-check-item="arranque" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                            <span>Optimización de Arranque / Apps</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Catalog Selection for Realized State -->
-                <div id="catalog-selection-box" class="bg-indigo-50/60 p-5 rounded-2xl border border-indigo-100 hidden">
-                    <h4 class="font-bold text-indigo-900 text-sm mb-2 flex items-center gap-2">
-                        <i data-lucide="receipt" class="w-4 h-4 text-indigo-600"></i>
-                        Seleccionar Servicios Aplicados (Para Facturación / Ticket)
-                    </h4>
-                    <p class="text-xs text-indigo-700 mb-3">Marca los servicios prestados del catálogo para calcular el total automáticamente.</p>
-                    <div id="checklist-catalog-items" class="space-y-2">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-            </div>
-
-            <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
-                <span id="checklist-status-indicator" class="text-xs font-semibold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">Completa la revisión obligatoria</span>
-                <div class="flex gap-3">
-                    <button type="button" onclick="closeChecklistModal()" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
-                    <button type="button" onclick="submitChecklistAndComplete()" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-sm shadow-indigo-600/20">Guardar Checklist & Actualizar Estado</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Professional Printable Ticket of Sale -->
-    <div id="ticket-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-xl w-full p-8 shadow-2xl border border-slate-100 max-h-[92vh] flex flex-col relative">
-            
-            <!-- Modal Actions (No Print) -->
-            <div class="flex justify-between items-center mb-4 no-print pb-3 border-b border-slate-100">
-                <h3 class="text-lg font-bold text-slate-800">Ticket de Cobro Profesional</h3>
-                <div class="flex items-center gap-2">
-                    <button onclick="window.print()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs px-4 py-2 rounded-xl transition shadow-sm">
-                        <i data-lucide="printer" class="w-4 h-4"></i> Imprimir / PDF
-                    </button>
-                    <button onclick="closeTicketModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Printable Area -->
-            <div id="print-ticket-modal" class="flex-1 overflow-y-auto bg-white p-6 rounded-2xl border border-slate-200 space-y-6 font-sans text-slate-800">
-                
-                <!-- Header -->
-                <div class="text-center border-b border-slate-200 pb-5">
-                    <div class="inline-flex items-center justify-center bg-indigo-600 text-white font-black px-3.5 py-1.5 rounded-2xl text-2xl tracking-wider shadow-md mb-2">PC+</div>
-                    <h2 class="text-xl font-extrabold text-slate-900">PC+ Soporte Técnico</h2>
-                    <p class="text-xs text-indigo-600 font-semibold tracking-wide mt-0.5">Servicios para tu computador</p>
-                    <p class="text-[11px] text-slate-400 mt-1">Pereira, Risaralda | WhatsApp: 310 000 0000</p>
-                </div>
-
-                <!-- Ticket Info & Client -->
-                <div class="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <div>
-                        <p class="text-slate-400 font-semibold uppercase">Ticket No.</p>
-                        <p id="ticket-id" class="font-bold text-slate-800 text-sm">#--</p>
-                    </div>
-                    <div>
-                        <p class="text-slate-400 font-semibold uppercase">Fecha y Hora</p>
-                        <p id="ticket-datetime" class="font-bold text-slate-800 text-sm">--/--/----</p>
-                    </div>
-                    <div>
-                        <p class="text-slate-400 font-semibold uppercase">Cliente</p>
-                        <p id="ticket-client-name" class="font-bold text-slate-800">--</p>
-                    </div>
-                    <div>
-                        <p class="text-slate-400 font-semibold uppercase">Teléfono / Ciudad</p>
-                        <p id="ticket-client-contact" class="font-bold text-slate-800">-- (Pereira)</p>
-                    </div>
-                </div>
-
-                <!-- Services Rendered Table -->
-                <div>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Detalle de Servicios Realizados</h4>
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="border-b border-slate-200 text-slate-500 font-semibold">
-                                <th class="py-2">Descripción del Servicio</th>
-                                <th class="py-2 text-right">Valor (COP)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ticket-items-tbody" class="divide-y divide-slate-100">
-                            <!-- Populated by JS -->
-                        </tbody>
-                        <tfoot>
-                            <tr class="border-t-2 border-slate-800 font-bold text-sm">
-                                <td class="py-3 text-slate-900">TOTAL A PAGAR:</td>
-                                <td id="ticket-total-amount" class="py-3 text-right text-indigo-600">$0 COP</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-
-                <!-- Warranty & Notes -->
-                <div class="border-t border-slate-200 pt-4 text-[11px] text-slate-500 space-y-1">
-                    <p class="font-semibold text-slate-700">Notas de la Garantía:</p>
-                    <p>Garantía de 30 días en mano de obra y servicios de software. No cubre daños por descargas eléctricas, manipulación indebida o virus posteriores a la entrega.</p>
-                    <p class="text-center font-bold text-slate-800 mt-4 pt-2 border-t border-dashed border-slate-200">¡Gracias por confiar en PC+ Servicios para tu computador!</p>
-                </div>
-            </div>
-
-            <!-- Modal Footer (No Print) -->
-            <div class="pt-4 border-t border-slate-100 flex justify-end no-print">
-                <button onclick="closeTicketModal()" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Application Script -->
-    <script>
-        /* ================= STATE MANAGEMENT & MOCK DATA ================= */
-        const CATALOG_SERVICES = [
-            { id: 'cat_1', name: 'Mantenimiento Preventivo y Correctivo de Hardware', price: 75000, desc: 'Limpieza profunda, cambio de pasta térmica y revisión física.' },
-            { id: 'cat_2', name: 'Formateo, Instalación y Optimización de Software', price: 95000, desc: 'Reinstalación de Sistema Operativo (Windows/Linux), drivers y puesta a punto.' },
-            { id: 'cat_3', name: 'Respaldo y Recuperación de Datos (Backup)', price: 60000, desc: 'Copia de seguridad y recuperación de archivos importantes.' },
-            { id: 'cat_4', name: 'Diagnóstico Técnico y Asistencia Remota', price: 45000, desc: 'Revisión experta inicial o soporte por AnyDesk / TeamViewer.' }
-        ];
-
-        let state = {
-            clients: [
-                { id: 1, name: 'Carlos Mario Giraldo', phone: '3104567890', email: 'carlos.giraldo@gmail.com', address: 'Cra. 7 # 21-45', city: 'Pereira', notes: 'Equipo portátil HP Pavilion' },
-                { id: 2, name: 'Ana María Henao', phone: '3209876543', email: 'anamaria@yahoo.es', address: 'Cl. 14 # 4-20 apt 202', city: 'Pereira', notes: 'Torre ensamblada Gamer' },
-                { id: 3, name: 'Juan Pablo Zuluaga', phone: '3112345678', email: 'jpzuluaga@outlook.com', address: 'Av. Circunvalar # 10-30', city: 'Pereira', notes: 'MacBook Pro 2019' }
-            ],
-            services: [
-                { id: 101, clientId: 1, type: 'Presencial', date: '2026-06-05', time: '10:00', status: 'Realizado', notes: 'Mantenimiento general y cambio de pasta térmica.', appliedCatalog: ['cat_1'], checklist: { fisica: ['chasis','limpieza','ventiladores','puertos'], diagnostico: ['temperatura','disco','ram','bateria'], software: ['so','virus','arranque'] } },
-                { id: 102, clientId: 2, type: 'Remota', date: '2026-06-06', time: '14:30', status: 'En Proceso', notes: 'Lentitud extrema y posible malware.', appliedCatalog: [], checklist: { fisica: [], diagnostico: ['disco','ram'], software: ['virus'] } },
-                { id: 103, clientId: 3, type: 'Presencial', date: '2026-06-07', time: '09:00', status: 'Pendiente', notes: 'Formateo completo y respaldo de documentos.', appliedCatalog: [], checklist: { fisica: [], diagnostico: [], software: [] } }
-            ],
-            activeFilterStatus: 'Todos',
-            currentServiceForChecklist: null
-        };
-
-        // Load from localStorage if available
-        function loadStorage() {
-            const saved = localStorage.getItem('pc_plus_erp_state');
-            if (saved) {
-                try {
-                    state = JSON.parse(saved);
-                } catch(e) { console.error(e); }
-            }
-        }
-
-        function saveStorage() {
-            localStorage.setItem('pc_plus_erp_state', JSON.stringify(state));
-        }
-
-        /* ================= INITIALIZATION ================= */
-        document.addEventListener('DOMContentLoaded', () => {
-            loadStorage();
-            lucide.createIcons();
-            renderDashboard();
-            renderClientsTable();
-            renderServicesTable();
-            renderCatalog();
-            populateClientDropdown();
-        });
-
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `pointer-events-auto px-4 py-3 rounded-2xl shadow-lg text-white text-xs font-semibold flex items-center gap-2 transition transform translate-y-2 opacity-0 ${type === 'success' ? 'bg-emerald-600' : 'bg-indigo-600'}`;
-            toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'info'}" class="w-4 h-4"></i> ${message}`;
-            container.appendChild(toast);
-            lucide.createIcons();
-            setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
-            setTimeout(() => {
-                toast.classList.add('translate-y-2', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        /* ================= NAVIGATION & TABS ================= */
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-
-            document.querySelectorAll('.nav-link').forEach(el => {
-                el.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
-                el.classList.add('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
-            });
-
-            // Find clicked or target link
-            const activeLink = Array.from(document.querySelectorAll('.nav-link')).find(el => el.getAttribute('href') === `#${tabId}`);
-            if (activeLink) {
-                activeLink.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
-                activeLink.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
-            }
-
-            const titles = {
-                dashboard: 'Panel de Control',
-                clients: 'Base de Datos de Clientes',
-                services: 'Solicitudes y Seguimiento de Servicios',
-                catalog: 'Catálogo de Servicios y Precios'
-            };
-            document.getElementById('current-view-title').innerText = titles[tabId] || 'Panel';
-
-            // Close mobile menu if open
-            const sidebar = document.getElementById('sidebar');
-            if (!sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.add('-translate-x-full');
-            }
-
-            if (tabId === 'dashboard') renderDashboard();
-            if (tabId === 'clients') renderClientsTable();
-            if (tabId === 'services') renderServicesTable();
-        }
-
-        function toggleMobileMenu() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('-translate-x-full');
-        }
-
-        /* ================= DASHBOARD RENDER ================= */
-        function renderDashboard() {
-            const todayStr = new Date().toISOString().split('T')[0];
-            const pendingToday = state.services.filter(s => s.status === 'Pendiente' || s.status === 'En Proceso').length;
-            const completedMonth = state.services.filter(s => s.status === 'Realizado').length;
-            const totalClients = state.clients.length;
-
-            // Calculate estimated revenue from realized services
-            let estimatedRevenue = 0;
-            state.services.forEach(s => {
-                if (s.status === 'Realizado' && s.appliedCatalog) {
-                    s.appliedCatalog.forEach(catId => {
-                        const item = CATALOG_SERVICES.find(c => c.id === catId);
-                        if (item) estimatedRevenue += item.price;
-                    });
-                }
-            });
-
-            document.getElementById('stat-pending-today').innerText = pendingToday;
-            document.getElementById('stat-completed-month').innerText = completedMonth;
-            document.getElementById('stat-total-clients').innerText = totalClients;
-            document.getElementById('stat-estimated-revenue').innerText = `$${estimatedRevenue.toLocaleString('es-CO')}`;
-
-            // Render dashboard services table (recent active ones)
-            const tbody = document.getElementById('dashboard-services-tbody');
-            tbody.innerHTML = '';
-
-            const activeServices = state.services.filter(s => s.status !== 'Realizado' && s.status !== 'Cancelado').slice(0, 5);
-
-            if (activeServices.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">No hay servicios pendientes en este momento. ¡Todo al día!</td></tr>`;
-                return;
-            }
-
-            activeServices.forEach(srv => {
-                const client = state.clients.find(c => c.id == srv.clientId) || { name: 'Cliente Desconocido' };
-                const badgeClass = srv.status === 'Pendiente' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200';
-                
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50/80 transition';
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-semibold text-slate-700">#${srv.id}</td>
-                    <td class="py-3 px-4 font-medium text-slate-900">${client.name}</td>
-                    <td class="py-3 px-4"><span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-medium">${srv.type}</span></td>
-                    <td class="py-3 px-4 text-slate-600 text-xs">${srv.date} - ${srv.time}</td>
-                    <td class="py-3 px-4"><span class="text-xs px-2.5 py-1 rounded-full border font-semibold ${badgeClass}">${srv.status}</span></td>
-                    <td class="py-3 px-4 text-right">
-                        <button onclick="openChecklistModal(${srv.id})" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold px-3 py-1.5 rounded-xl transition">Procesar</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-            lucide.createIcons();
-        }
-
-        /* ================= CLIENTS MODULE (CRUD) ================= */
-        function renderClientsTable() {
-            const query = (document.getElementById('client-search-input')?.value || '').toLowerCase();
-            const tbody = document.getElementById('clients-tbody');
-            tbody.innerHTML = '';
-
-            const filtered = state.clients.filter(c => 
-                c.name.toLowerCase().includes(query) || c.phone.includes(query)
-            );
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">No se encontraron clientes registrados.</td></tr>`;
-                return;
-            }
-
-            filtered.forEach(client => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50/80 transition';
-                tr.innerHTML = `
-                    <td class="py-4 px-6 font-semibold text-slate-700">#${client.id}</td>
-                    <td class="py-4 px-6 font-bold text-slate-900">${client.name}</td>
-                    <td class="py-4 px-6 text-slate-600 font-medium">
-                        <a href="https://wa.me/57${client.phone}" target="_blank" class="text-emerald-600 hover:underline flex items-center gap-1.5">
-                            <i data-lucide="phone" class="w-3.5 h-3.5"></i> ${client.phone}
-                        </a>
-                    </td>
-                    <td class="py-4 px-6 text-slate-500 text-xs">${client.email || 'No registrado'}</td>
-                    <td class="py-4 px-6 text-slate-600 text-xs">${client.address || 'Sin dirección'} (${client.city})</td>
-                    <td class="py-4 px-6 text-right space-x-2">
-                        <button onclick="openClientHistory(${client.id})" title="Historial / Línea de tiempo" class="p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition inline-flex items-center">
-                            <i data-lucide="history" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="editClient(${client.id})" title="Editar cliente" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition inline-flex items-center">
-                            <i data-lucide="edit-3" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="deleteClient(${client.id})" title="Eliminar cliente" class="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition inline-flex items-center">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-            lucide.createIcons();
-        }
-
-        function openNewClientModal() {
-            document.getElementById('client-form').reset();
-            document.getElementById('client-id').value = '';
-            document.getElementById('client-modal-title').innerText = 'Registrar Nuevo Cliente';
-            document.getElementById('client-modal').classList.remove('hidden');
-        }
-
-        function closeClientModal() {
-            document.getElementById('client-modal').classList.add('hidden');
-        }
-
-        function saveClient(e) {
-            e.preventDefault();
-            const id = document.getElementById('client-id').value;
-            const name = document.getElementById('client-name').value;
-            const phone = document.getElementById('client-phone').value;
-            const email = document.getElementById('client-email').value;
-            const address = document.getElementById('client-address').value;
-            const notes = document.getElementById('client-notes').value;
-
-            if (id) {
-                // Update
-                const idx = state.clients.findIndex(c => c.id == id);
-                if (idx !== -1) {
-                    state.clients[idx] = { ...state.clients[idx], name, phone, email, address, notes };
-                    showToast('Cliente actualizado correctamente');
-                }
-            } else {
-                // Create
-                const newId = state.clients.length > 0 ? Math.max(...state.clients.map(c => c.id)) + 1 : 1;
-                state.clients.push({ id: newId, name, phone, email, address, city: 'Pereira', notes });
-                showToast('Cliente registrado con éxito en Pereira');
-            }
-
-            saveStorage();
-            closeClientModal();
-            renderClientsTable();
-            populateClientDropdown();
-        }
-
-        function editClient(id) {
-            const client = state.clients.find(c => c.id == id);
-            if (!client) return;
-            document.getElementById('client-id').value = client.id;
-            document.getElementById('client-name').value = client.name;
-            document.getElementById('client-phone').value = client.phone;
-            document.getElementById('client-email').value = client.email || '';
-            document.getElementById('client-address').value = client.address || '';
-            document.getElementById('client-notes').value = client.notes || '';
-            document.getElementById('client-modal-title').innerText = 'Editar Datos de Cliente';
-            document.getElementById('client-modal').classList.remove('hidden');
-        }
-
-        function deleteClient(id) {
-            if (confirm('¿Estás seguro de eliminar este cliente? Se mantendrán sus servicios históricos.')) {
-                state.clients = state.clients.filter(c => c.id != id);
-                saveStorage();
-                renderClientsTable();
-                populateClientDropdown();
-                showToast('Cliente eliminado', 'info');
-            }
-        }
-
-        /* ================= SERVICES & TIMELINE MODULE ================= */
-        function filterServiceStatus(status) {
-            state.activeFilterStatus = status;
-            document.querySelectorAll('.service-filter-btn').forEach(btn => {
-                if (btn.getAttribute('data-status') === status) {
-                    btn.className = 'service-filter-btn px-4 py-1.5 rounded-xl text-xs font-semibold transition bg-indigo-600 text-white shadow-sm';
-                } else {
-                    btn.className = 'service-filter-btn px-4 py-1.5 rounded-xl text-xs font-semibold transition bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
-                }
-            });
-            renderServicesTable();
-        }
-
-        function renderServicesTable() {
-            const tbody = document.getElementById('services-tbody');
-            tbody.innerHTML = '';
-
-            let filtered = state.services;
-            if (state.activeFilterStatus !== 'Todos') {
-                filtered = state.services.filter(s => s.status === state.activeFilterStatus);
-            }
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">No hay solicitudes de servicio registradas con este filtro.</td></tr>`;
-                return;
-            }
-
-            filtered.forEach(srv => {
-                const client = state.clients.find(c => c.id == srv.clientId) || { name: 'Cliente Eliminado', phone: '--' };
-                
-                let badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
-                if (srv.status === 'En Proceso') badgeColor = 'bg-blue-50 text-blue-700 border-blue-200';
-                if (srv.status === 'Realizado') badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-                if (srv.status === 'Cancelado') badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
-
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50/80 transition';
-                tr.innerHTML = `
-                    <td class="py-4 px-6 font-semibold text-slate-700">#${srv.id}</td>
-                    <td class="py-4 px-6">
-                        <p class="font-bold text-slate-900">${client.name}</p>
-                        <p class="text-xs text-slate-400">${client.phone}</p>
-                    </td>
-                    <td class="py-4 px-6">
-                        <span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md font-medium">${srv.type}</span>
-                    </td>
-                    <td class="py-4 px-6 text-slate-600 text-xs">
-                        <p class="font-semibold">${srv.date}</p>
-                        <p class="text-slate-400">${srv.time}</p>
-                    </td>
-                    <td class="py-4 px-6">
-                        <span class="text-xs px-3 py-1 rounded-full border font-semibold ${badgeColor}">${srv.status}</span>
-                    </td>
-                    <td class="py-4 px-6 text-right space-x-2">
-                        <button onclick="openChecklistModal(${srv.id})" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs rounded-xl transition inline-flex items-center gap-1">
-                            <i data-lucide="check-square" class="w-3.5 h-3.5"></i> Procesar / Checklist
-                        </button>
-                        ${srv.status === 'Realizado' ? `
-                        <button onclick="openTicketModal(${srv.id})" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs rounded-xl transition inline-flex items-center gap-1">
-                            <i data-lucide="receipt" class="w-3.5 h-3.5"></i> Ticket Cobro
-                        </button>` : ''}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-            lucide.createIcons();
-        }
-
-        function populateClientDropdown() {
-            const select = document.getElementById('service-client-id');
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccione un cliente...</option>';
-            state.clients.forEach(c => {
-                select.innerHTML += `<option value="${c.id}">${c.name} (${c.phone})</option>`;
-            });
-        }
-
-        function openNewServiceModal() {
-            populateClientDropdown();
-            document.getElementById('service-form').reset();
-            document.getElementById('service-id').value = '';
-            document.getElementById('service-date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('service-time').value = '10:00';
-            document.getElementById('service-modal-title').innerText = 'Programar Nueva Solicitud';
-            document.getElementById('service-modal').classList.remove('hidden');
-        }
-
-        function closeServiceModal() {
-            document.getElementById('service-modal').classList.add('hidden');
+                </form>
+            `;
+            modal.classList.remove('hidden');
         }
 
         function saveService(e) {
             e.preventDefault();
-            const id = document.getElementById('service-id').value;
-            const clientId = document.getElementById('service-client-id').value;
-            const type = document.getElementById('service-type').value;
-            const status = document.getElementById('service-status').value;
-            const date = document.getElementById('service-date').value;
-            const time = document.getElementById('service-time').value;
-            const notes = document.getElementById('service-notes').value;
-
-            if (id) {
-                const idx = state.services.findIndex(s => s.id == id);
-                if (idx !== -1) {
-                    state.services[idx] = { ...state.services[idx], clientId, type, status, date, time, notes };
-                    showToast('Servicio actualizado con éxito');
-                }
-            } else {
-                const newId = state.services.length > 0 ? Math.max(...state.services.map(s => s.id)) + 1 : 101;
-                state.services.push({
-                    id: newId,
-                    clientId,
-                    type,
-                    status,
-                    date,
-                    time,
-                    notes,
-                    appliedCatalog: [],
-                    checklist: { fisica: [], diagnostico: [], software: [] }
-                });
-                showToast('Servicio programado correctamente');
-            }
-
-            saveStorage();
-            closeServiceModal();
-            renderServicesTable();
-            renderDashboard();
+            const checkedCatalogs = Array.from(document.querySelectorAll('input[name="serviceCatalog"]:checked')).map(el => parseInt(el.value));
+            
+            const newService = {
+                id: appState.services.length > 0 ? Math.max(...appState.services.map(s => s.id)) + 1 : 101,
+                clientId: parseInt(document.getElementById('sClient').value),
+                type: document.getElementById('sType').value,
+                date: document.getElementById('sDate').value,
+                time: document.getElementById('sTime').value,
+                status: document.getElementById('sStatus').value,
+                selectedCatalogIds: checkedCatalogs,
+                receptionChecklist: null,
+                departureChecklist: null
+            };
+            appState.services.push(newService);
+            saveData();
+            closeModal();
+            render();
         }
 
-        /* ================= CLIENT HISTORY / TIMELINE ================= */
-        function openClientHistory(clientId) {
-            const client = state.clients.find(c => c.id == clientId);
-            if (!client) return;
+        // ================= CHECKLIST DE RECEPCIÓN =================
+        function openReceptionChecklist(serviceId) {
+            const service = appState.services.find(s => s.id === serviceId);
+            const rc = service.receptionChecklist || {
+                equipType: 'Portátil', brand: '', model: '', serial: '', os: '', pass: '', symptoms: '', notes: '',
+                chasis: { na: false, note: '' }, internalClean: { na: false, note: '' }
+            };
 
-            document.getElementById('history-client-name').innerText = `Historial: ${client.name}`;
-            document.getElementById('history-client-meta').innerText = `Teléfono: ${client.phone} | Dirección: ${client.address || 'N/A'} (${client.city})`;
-
-            const container = document.getElementById('history-timeline-container');
-            container.innerHTML = '';
-
-            const clientServices = state.services.filter(s => s.clientId == clientId);
-
-            if (clientServices.length === 0) {
-                container.innerHTML = `<p class="text-center text-slate-400 py-8">Este cliente no registra servicios previos en el historial.</p>`;
-            } else {
-                clientServices.forEach((srv, idx) => {
-                    let badgeColor = 'bg-amber-50 text-amber-700';
-                    if (srv.status === 'Realizado') badgeColor = 'bg-emerald-50 text-emerald-700';
-                    if (srv.status === 'En Proceso') badgeColor = 'bg-blue-50 text-blue-700';
-
-                    let catalogHtml = '';
-                    if (srv.appliedCatalog && srv.appliedCatalog.length > 0) {
-                        catalogHtml = `<div class="mt-2 text-xs text-slate-600 bg-white p-2.5 rounded-xl border border-slate-200"><strong>Servicios aplicados:</strong><ul class="list-disc list-inside mt-1">`;
-                        srv.appliedCatalog.forEach(catId => {
-                            const cat = CATALOG_SERVICES.find(c => c.id === catId);
-                            if (cat) catalogHtml += `<li>${cat.name} ($${cat.price.toLocaleString('es-CO')} COP)</li>`;
-                        });
-                        catalogHtml += `</ul></div>`;
-                    }
-
-                    const div = document.createElement('div');
-                    div.className = 'relative pl-6 border-l-2 border-indigo-200 pb-4';
-                    div.innerHTML = `
-                        <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-indigo-600 border-2 border-white shadow-xs"></div>
-                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold text-slate-800 text-sm">Servicio #${srv.id} (${srv.type})</span>
-                                <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold ${badgeColor}">${srv.status}</span>
-                            </div>
-                            <p class="text-xs text-slate-500 mb-2">Programado: <strong>${srv.date}</strong> a las <strong>${srv.time}</strong></p>
-                            <p class="text-xs text-slate-700 bg-white p-3 rounded-xl border border-slate-100">${srv.notes || 'Sin notas adicionales.'}</p>
-                            ${catalogHtml}
+            const modal = document.getElementById('globalModal');
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `
+                <h3 class="font-heading font-bold text-xl text-white mb-2">Lista de Chequeo Recepción de Equipo</h3>
+                <p class="text-xs text-secondary mb-4">Servicio Ticket #${serviceId} - Obligatorio antes del diagnóstico.</p>
+                <form onsubmit="saveReceptionChecklist(event, ${serviceId})" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Tipo de Equipo</label>
+                            <select id="rcEquipType" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+                                <option value="Portátil" ${rc.equipType==='Portátil'?'selected':''}>Portátil</option>
+                                <option value="PC de Escritorio" ${rc.equipType==='PC de Escritorio'?'selected':''}>PC de Escritorio</option>
+                                <option value="Monitor" ${rc.equipType==='Monitor'?'selected':''}>Monitor</option>
+                                <option value="Impresora" ${rc.equipType==='Impresora'?'selected':''}>Impresora</option>
+                                <option value="Otro" ${rc.equipType==='Otro'?'selected':''}>Otro</option>
+                            </select>
                         </div>
-                    `;
-                    container.appendChild(div);
-                });
-            }
-
-            document.getElementById('history-modal').classList.remove('hidden');
-        }
-
-        function closeHistoryModal() {
-            document.getElementById('history-modal').classList.add('hidden');
-        }
-
-        /* ================= TECHNICAL CHECKLIST & WORKFLOW ================= */
-        function openChecklistModal(serviceId) {
-            const srv = state.services.find(s => s.id == serviceId);
-            if (!srv) return;
-            state.currentServiceForChecklist = srv.id;
-
-            const client = state.clients.find(c => c.id == srv.clientId) || { name: 'Cliente Desconocido' };
-            document.getElementById('checklist-modal-title').innerText = `Servicio #${srv.id} - Diagnóstico & Checklist`;
-            document.getElementById('checklist-modal-subtitle').innerText = `Cliente: ${client.name} | Tipo: ${srv.type}`;
-
-            // Reset checkboxes
-            document.querySelectorAll('#checklist-modal input[type="checkbox"]').forEach(chk => {
-                chk.checked = false;
-                const cat = chk.getAttribute('data-check-cat');
-                const item = chk.getAttribute('data-check-item');
-                if (srv.checklist && srv.checklist[cat] && srv.checklist[cat].includes(item)) {
-                    chk.checked = true;
-                }
-            });
-
-            // Populate catalog selection items
-            const catBox = document.getElementById('catalog-selection-box');
-            catBox.classList.remove('hidden'); // Always allow marking applied catalog items
-
-            const catContainer = document.getElementById('checklist-catalog-items');
-            catContainer.innerHTML = '';
-            CATALOG_SERVICES.forEach(cat => {
-                const isChecked = srv.appliedCatalog && srv.appliedCatalog.includes(cat.id);
-                catContainer.innerHTML += `
-                    <label class="flex items-center justify-between bg-white p-3 rounded-xl border border-indigo-100 cursor-pointer hover:border-indigo-300">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" value="${cat.id}" ${isChecked ? 'checked' : ''} class="checklist-catalog-chk w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                            <div>
-                                <p class="text-xs font-bold text-slate-800">${cat.name}</p>
-                                <p class="text-[11px] text-slate-400">${cat.desc}</p>
-                            </div>
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Marca</label>
+                            <input type="text" id="rcBrand" value="${rc.brand || ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
                         </div>
-                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">$${cat.price.toLocaleString('es-CO')} COP</span>
-                    </label>
-                `;
-            });
-
-            document.getElementById('checklist-modal').classList.remove('hidden');
-        }
-
-        function closeChecklistModal() {
-            document.getElementById('checklist-modal').classList.add('hidden');
-            state.currentServiceForChecklist = null;
-        }
-
-        function submitChecklistAndComplete() {
-            if (!state.currentServiceForChecklist) return;
-            const srv = state.services.find(s => s.id == state.currentServiceForChecklist);
-            if (!srv) return;
-
-            // Gather checklist data
-            const checklist = { fisica: [], diagnostico: [], software: [] };
-            document.querySelectorAll('#checklist-modal input[type="checkbox"][data-check-cat]').forEach(chk => {
-                if (chk.checked) {
-                    const cat = chk.getAttribute('data-check-cat');
-                    const item = chk.getAttribute('data-check-item');
-                    checklist[cat].push(item);
-                }
-            });
-
-            // Gather applied catalog
-            const appliedCatalog = [];
-            document.querySelectorAll('.checklist-catalog-chk:checked').forEach(chk => {
-                appliedCatalog.push(chk.value);
-            });
-
-            srv.checklist = checklist;
-            srv.appliedCatalog = appliedCatalog;
-            srv.status = 'Realizado'; // Automatically completed upon final checklist review
-
-            saveStorage();
-            closeChecklistModal();
-            renderServicesTable();
-            renderDashboard();
-            showToast('Checklist guardado y servicio marcado como REALIZADO');
-
-            // Optionally open ticket modal immediately
-            openTicketModal(srv.id);
-        }
-
-        /* ================= CATALOG MODULE ================= */
-        function renderCatalog() {
-            const grid = document.getElementById('catalog-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-
-            CATALOG_SERVICES.forEach(cat => {
-                const card = document.createElement('div');
-                card.className = 'bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between';
-                card.innerHTML = `
-                    <div>
-                        <div class="flex justify-between items-start gap-4 mb-3">
-                            <span class="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1 rounded-full border border-indigo-100">Tarifa Base</span>
-                            <span class="text-xl font-extrabold text-slate-900">$${cat.price.toLocaleString('es-CO')} <span class="text-xs text-slate-400 font-normal">COP</span></span>
-                        </div>
-                        <h3 class="font-bold text-slate-800 text-base mb-2">${cat.name}</h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">${cat.desc}</p>
                     </div>
-                    <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <span class="text-[11px] text-slate-400 flex items-center gap-1">
-                            <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Incluido en ticket
-                        </span>
-                        <button onclick="openNewServiceModal()" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold px-3 py-1.5 rounded-xl transition">
-                            Usar en Solicitud
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Modelo</label>
+                            <input type="text" id="rcModel" value="${rc.model || ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Serial</label>
+                            <input type="text" id="rcSerial" value="${rc.serial || ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Sistema Operativo</label>
+                            <input type="text" id="rcOs" value="${rc.os || ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Contraseña</label>
+                            <input type="text" id="rcPass" value="${rc.pass || ''}" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-secondary mb-1">Síntomas o Estado Reportado (Máx 500 caract.)</label>
+                        <textarea id="rcSymptoms" maxlength="500" rows="3" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">${rc.symptoms || ''}</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-secondary mb-1">Notas Adicionales (Máx 500 caract.)</label>
+                        <textarea id="rcNotes" maxlength="500" rows="2" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">${rc.notes || ''}</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-secondary mb-1">Adjuntar Imágenes / Evidencia de Recepción</label>
+                        <input type="file" id="rcImage" accept="image/*" class="w-full text-xs text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-red-700">
+                    </div>
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-zinc-800 text-gray-300 rounded-lg text-sm">Cerrar</button>
+                        <button type="submit" class="px-4 py-2 bg-primary hover:bg-red-700 text-white rounded-lg text-sm font-semibold">Guardar Checklist Recepción</button>
+                    </div>
+                </form>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        function saveReceptionChecklist(e, serviceId) {
+            e.preventDefault();
+            const service = appState.services.find(s => s.id === serviceId);
+            service.receptionChecklist = {
+                equipType: document.getElementById('rcEquipType').value,
+                brand: document.getElementById('rcBrand').value,
+                model: document.getElementById('rcModel').value,
+                serial: document.getElementById('rcSerial').value,
+                os: document.getElementById('rcOs').value,
+                pass: document.getElementById('rcPass').value,
+                symptoms: document.getElementById('rcSymptoms').value,
+                notes: document.getElementById('rcNotes').value
+            };
+            saveData();
+            closeModal();
+            alert('Checklist de recepción guardado exitosamente.');
+            render();
+        }
+
+        // ================= CHECKLIST DE SALIDA Y CAMBIO A REALIZADO =================
+        function openDepartureChecklist(serviceId) {
+            const service = appState.services.find(s => s.id === serviceId);
+            const dc = service.departureChecklist || { finalDiag: '', notes: '' };
+
+            const modal = document.getElementById('globalModal');
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `
+                <h3 class="font-heading font-bold text-xl text-white mb-2">Lista de Chequeo de Salida de Taller</h3>
+                <p class="text-xs text-secondary mb-4">Obligatorio antes de cambiar el estado del servicio a "Realizado".</p>
+                <form onsubmit="saveDepartureChecklist(event, ${serviceId})" class="space-y-4">
+                    
+                    <div class="space-y-3 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
+                        <h4 class="text-sm font-bold text-primary">Detalles Físicos y Componentes</h4>
+                        ${['Estado del chasis', 'Limpieza interna', 'Limpieza externa', 'Funcionamiento de ventiladores', 'Puertos USB/Pantalla', 'Estado de la batería', 'Estado del teclado'].map((item, idx) => `
+                            <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between border-b border-zinc-800 pb-2">
+                                <span class="text-xs text-white w-48 font-medium">${item}</span>
+                                <input type="text" maxlength="100" placeholder="Nota aclaratoria (100 car.)" id="dc_phys_${idx}" class="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white">
+                                <label class="flex items-center gap-1 text-xs text-secondary"><input type="checkbox" id="dc_phys_na_${idx}"> N/A</label>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-secondary mb-1">Diagnóstico Final (Máx 500 caract.)</label>
+                        <textarea id="dcFinalDiag" maxlength="500" rows="3" required class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">${dc.finalDiag || ''}</textarea>
+                    </div>
+
+                    <div class="space-y-3 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
+                        <h4 class="text-sm font-bold text-primary">Software, Optimización y Drivers</h4>
+                        ${['Sistema operativo actual', 'Actualizaciones SO', 'Antivirus', 'Malware', 'Aplicaciones de arranque optimizadas', 'Limpieza almacenamiento', 'Archivos temporales', 'Limpieza archivos y accesos directos', 'Software Ofimática', 'Navegador Optimizado', 'Software Utilitario', 'Drivers Actualizados'].map((item, idx) => `
+                            <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between border-b border-zinc-800 pb-2">
+                                <span class="text-xs text-white w-48 font-medium">${item}</span>
+                                <input type="text" maxlength="100" placeholder="Nota aclaratoria (100 car.)" id="dc_soft_${idx}" class="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white">
+                                <label class="flex items-center gap-1 text-xs text-secondary"><input type="checkbox" id="dc_soft_na_${idx}"> N/A</label>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-secondary mb-1">Notas Adicionales de Salida (Máx 500 caract.)</label>
+                        <textarea id="dcNotes" maxlength="500" rows="2" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2.5 text-sm text-white">${dc.notes || ''}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-secondary mb-1">Adjuntar Imágenes / Evidencia de Salida de Taller</label>
+                        <input type="file" id="dcImage" accept="image/*" class="w-full text-xs text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-red-700">
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-zinc-800 text-gray-300 rounded-lg text-sm">Cerrar</button>
+                        <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar y Pasar Estado a "Realizado"
                         </button>
                     </div>
-                `;
-                grid.appendChild(card);
-            });
-            lucide.createIcons();
+                </form>
+            `;
+            modal.classList.remove('hidden');
         }
 
-        /* ================= TICKET OF SALE MODULE ================= */
-        function openTicketModal(serviceId) {
-            const srv = state.services.find(s => s.id == serviceId);
-            if (!srv) return;
-            const client = state.clients.find(c => c.id == srv.clientId) || { name: 'Cliente Desconocido', phone: '--', address: '--' };
-
-            document.getElementById('ticket-id').innerText = `#${srv.id}`;
-            document.getElementById('ticket-datetime').innerText = `${srv.date} - ${srv.time}`;
-            document.getElementById('ticket-client-name').innerText = client.name;
-            document.getElementById('ticket-client-contact').innerText = `${client.phone} | ${client.city || 'Pereira'}`;
-
-            const tbody = document.getElementById('ticket-items-tbody');
-            tbody.innerHTML = '';
-
-            let total = 0;
-            if (srv.appliedCatalog && srv.appliedCatalog.length > 0) {
-                srv.appliedCatalog.forEach(catId => {
-                    const cat = CATALOG_SERVICES.find(c => c.id === catId);
-                    if (cat) {
-                        total += cat.price;
-                        tbody.innerHTML += `
-                            <tr class="border-b border-slate-100">
-                                <td class="py-2.5 text-slate-800 font-medium">${cat.name}</td>
-                                <td class="py-2.5 text-right font-bold text-slate-900">$${cat.price.toLocaleString('es-CO')} COP</td>
-                            </tr>
-                        `;
-                    }
-                });
-            } else {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="2" class="py-4 text-center text-slate-400 italic">Asistencia general / Diagnóstico técnico</td>
-                    </tr>
-                `;
-            }
-
-            document.getElementById('ticket-total-amount').innerText = `$${total.toLocaleString('es-CO')} COP`;
-            document.getElementById('ticket-modal').classList.remove('hidden');
+        function saveDepartureChecklist(e, serviceId) {
+            e.preventDefault();
+            const service = appState.services.find(s => s.id === serviceId);
+            service.departureChecklist = {
+                finalDiag: document.getElementById('dcFinalDiag').value,
+                notes: document.getElementById('dcNotes').value
+            };
+            service.status = 'Realizado';
+            saveData();
+            closeModal();
+            alert('¡Lista de chequeo de salida guardada y servicio actualizado a "Realizado" con éxito!');
+            render();
         }
 
-        function closeTicketModal() {
-            document.getElementById('ticket-modal').classList.add('hidden');
+        // ================= RESUMEN DE SERVICIO Y TICKET DE COBRO PDF =================
+        function generateServiceSummary(serviceId) {
+            const service = appState.services.find(s => s.id === serviceId);
+            const client = appState.clients.find(c => c.id == service.clientId) || {};
+            const catalogItems = service.selectedCatalogIds.map(id => appState.catalogServices.find(c => c.id === id)).filter(Boolean);
+
+            const modal = document.getElementById('globalModal');
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `
+                <div id="printableSummary" class="bg-white text-zinc-900 p-8 rounded-xl shadow-2xl space-y-6">
+                    <div class="flex justify-between items-start border-b pb-4">
+                        <div>
+                            <h2 class="font-heading font-black text-2xl text-primary">PC+</h2>
+                            <p class="text-xs text-zinc-600 font-medium">Servicios para tu computador</p>
+                            <p class="text-xs text-zinc-500 mt-1">Pereira, Risaralda | WhatsApp: +57 6 3291031</p>
+                        </div>
+                        <div class="text-right">
+                            <h3 class="font-bold text-lg text-zinc-800">RESUMEN DE SERVICIO</h3>
+                            <p class="text-xs font-mono text-primary font-bold">Ticket #${service.id}</p>
+                            <p class="text-xs text-zinc-500">Fecha: ${service.date} - ${service.time}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-sm text-zinc-800 border-b pb-1 mb-2">Datos del Cliente</h4>
+                        <p class="text-xs text-zinc-700"><strong>Nombre:</strong> ${client.name}</p>
+                        <p class="text-xs text-zinc-700"><strong>Teléfono / WhatsApp:</strong> ${client.phone}</p>
+                        <p class="text-xs text-zinc-700"><strong>Dirección:</strong> ${client.address || 'N/A'}, ${client.city}</p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-sm text-zinc-800 border-b pb-1 mb-2">Detalle de Servicios Realizados</h4>
+                        <ul class="list-disc list-inside text-xs text-zinc-700 space-y-1">
+                            ${catalogItems.map(item => `<li>${item.name} - $${item.price.toLocaleString()} COP</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-sm text-zinc-800 border-b pb-1 mb-2">Lista de Chequeo de Salida de Taller</h4>
+                        <p class="text-xs text-zinc-700"><strong>Diagnóstico Final:</strong> ${service.departureChecklist?.finalDiag || 'N/A'}</p>
+                        <p class="text-xs text-zinc-700 mt-1"><strong>Notas Adicionales:</strong> ${service.departureChecklist?.notes || 'N/A'}</p>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-4 border-t print:hidden">
+                        <button onclick="window.print()" class="px-4 py-2 bg-zinc-800 text-white rounded-lg text-xs font-semibold"><i class="fa-solid fa-print mr-1"></i> Imprimir / Guardar PDF</button>
+                        <a href="https://wa.me/57${client.phone}?text=Hola%20${encodeURIComponent(client.name)},%20adjunto%20el%20resumen%20de%20servicio%20técnico%20de%20PC+%20para%20su%20equipo.%20Ticket%20%23${service.id}" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold flex items-center gap-1">
+                            <i class="fa-brands fa-whatsapp"></i> Enviar por WhatsApp
+                        </a>
+                    </div>
+                </div>
+            `;
+            modal.classList.remove('hidden');
         }
+
+        function generateServiceTicket(serviceId) {
+            const service = appState.services.find(s => s.id === serviceId);
+            const client = appState.clients.find(c => c.id == service.clientId) || {};
+            const catalogItems = service.selectedCatalogIds.map(id => appState.catalogServices.find(c => c.id === id)).filter(Boolean);
+            const total = catalogItems.reduce((acc, item) => acc + item.price, 0);
+
+            const modal = document.getElementById('globalModal');
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `
+                <div id="printableTicket" class="bg-white text-zinc-900 p-8 rounded-xl shadow-2xl space-y-6">
+                    <div class="flex justify-between items-start border-b pb-4">
+                        <div>
+                            <h2 class="font-heading font-black text-2xl text-primary">PC+</h2>
+                            <p class="text-xs text-zinc-600 font-medium">Servicios para tu computador</p>
+                            <p class="text-xs text-zinc-500 mt-1">Pereira, Risaralda | WhatsApp: +57 6 3291031</p>
+                        </div>
+                        <div class="text-right">
+                            <h3 class="font-bold text-lg text-zinc-800">TICKET DE COBRO</h3>
+                            <p class="text-xs font-mono text-primary font-bold">Consecutivo #${service.id}</p>
+                            <p class="text-xs text-zinc-500">Fecha: ${service.date} - ${service.time}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-sm text-zinc-800 border-b pb-1 mb-2">Datos del Cliente</h4>
+                        <p class="text-xs text-zinc-700"><strong>Nombre:</strong> ${client.name}</p>
+                        <p class="text-xs text-zinc-700"><strong>Teléfono / WhatsApp:</strong> ${client.phone}</p>
+                        <p class="text-xs text-zinc-700"><strong>Dirección:</strong> ${client.address || 'N/A'}, ${client.city}</p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-sm text-zinc-800 border-b pb-1 mb-2">Detalle Facturación</h4>
+                        <table class="w-full text-xs text-left">
+                            <thead>
+                                <tr class="border-b text-zinc-500">
+                                    <th class="py-1">Servicio / Ítem</th>
+                                    <th class="py-1 text-right">Precio</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                ${catalogItems.map(item => `
+                                    <tr>
+                                        <td class="py-2 text-zinc-800">${item.name}</td>
+                                        <td class="py-2 text-right font-bold text-zinc-800">$${item.price.toLocaleString()} COP</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        <div class="flex justify-between items-center pt-4 border-t mt-2">
+                            <span class="font-bold text-sm text-zinc-800">VALOR TOTAL:</span>
+                            <span class="font-extrabold text-lg text-primary">$${total.toLocaleString()} COP</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-zinc-100 p-3 rounded text-[11px] text-zinc-600">
+                        <strong>Notas de Garantía:</strong> Garantía de 30 días en mano de obra y mantenimiento. No cubre daños por descargas eléctricas, mal uso o manipulación de software no autorizado por PC+.
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-4 border-t print:hidden">
+                        <button onclick="window.print()" class="px-4 py-2 bg-zinc-800 text-white rounded-lg text-xs font-semibold"><i class="fa-solid fa-print mr-1"></i> Imprimir / Guardar PDF</button>
+                        <a href="https://wa.me/57${client.phone}?text=Hola%20${encodeURIComponent(client.name)},%20adjunto%20el%20ticket%20de%20cobro%20por%20valor%20de%20$%${total.toLocaleString()}%20COP%20correspondiente%20al%20servicio%20de%20PC+.%20Ticket%20%23${service.id}" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold flex items-center gap-1">
+                            <i class="fa-brands fa-whatsapp"></i> Enviar Ticket por WhatsApp
+                        </a>
+                    </div>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        function viewClientHistory(clientId) {
+            const client = appState.clients.find(c => c.id === clientId);
+            const clientServices = appState.services.filter(s => s.clientId === clientId);
+
+            const modal = document.getElementById('globalModal');
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `
+                <h3 class="font-heading font-bold text-xl text-white mb-2">Historial de Servicios - ${client.name}</h3>
+                <p class="text-xs text-secondary mb-4">Teléfono: ${client.phone} | Ciudad: ${client.city}</p>
+                <div class="space-y-3">
+                    ${clientServices.length === 0 ? '<p class="text-xs text-secondary">Este cliente no registra servicios anteriores.</p>' : clientServices.map(s => `
+                        <div class="bg-zinc-800 p-4 rounded-xl border border-zinc-700">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-mono text-primary font-bold text-sm">Ticket #${s.id}</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] bg-zinc-900 text-white">${s.status}</span>
+                            </div>
+                            <p class="text-xs text-gray-300"><strong>Fecha:</strong> ${s.date} (${s.type})</p>
+                            <p class="text-xs text-gray-400 mt-1"><strong>Diagnóstico / Salida:</strong> ${s.departureChecklist?.finalDiag || 'Pendiente de cierre en taller'}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        // Inicializar renderizado
+        render();
     </script>
 </body>
 </html>
